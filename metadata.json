@@ -1,0 +1,6 @@
+{
+  "name": "Inbox Hero",
+  "description": "AI-powered scam & phishing message detector with advanced threat analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
