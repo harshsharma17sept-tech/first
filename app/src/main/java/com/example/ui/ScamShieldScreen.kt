@@ -92,6 +92,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -119,6 +121,9 @@ import com.example.ui.theme.RiskCriticalRedBorder
 import com.example.ui.theme.RiskSafeGreen
 import com.example.ui.theme.RiskSafeGreenBg
 import com.example.ui.theme.RiskSafeGreenBorder
+import com.example.ui.theme.RiskWarningOrange
+import com.example.ui.theme.RiskWarningOrangeBg
+import com.example.ui.theme.RiskWarningOrangeBorder
 import kotlinx.coroutines.launch
 
 @Composable
@@ -147,7 +152,7 @@ fun ScamShieldScreen(
             onSubscribe = { plan ->
                 viewModel.subscribeMaxShieldPro(plan)
                 scope.launch {
-                    snackbarHostState.showSnackbar("MaxShield Pro Activated. 24/7 Zero-Trust Defense Enabled.")
+                    snackbarHostState.showSnackbar("MaxShield Pro Activated. Continuous Protection Enabled.")
                 }
             }
         )
@@ -184,7 +189,8 @@ fun ScamShieldScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(EditorialBackground)
+                .background(EditorialBackground),
+            contentAlignment = Alignment.TopCenter
         ) {
             // Subtle 1px modular grid pattern on warm light-gray canvas
             EditorialGridBackground(modifier = Modifier.fillMaxSize())
@@ -192,6 +198,7 @@ fun ScamShieldScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .widthIn(max = 720.dp)
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
                     .statusBarsPadding()
@@ -479,7 +486,7 @@ private fun EditorialHeroSection(
                 }
 
                 Text(
-                    text = "SYS_VER: 2.6.4 // ZERO-TRUST",
+                    text = "SYS_VER: 2.6.4 // ACTIVE-SHIELD",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 9.sp,
                     color = EditorialTextMuted
@@ -503,7 +510,7 @@ private fun EditorialHeroSection(
 
             // Subtitle description with technical markers
             Text(
-                text = "Autonomous cybersecurity workstation inspecting SMS, emails, and URLs for social engineering, coercive payment hooks, and zero-day phish.",
+                text = "AI-powered security analysis for suspicious messages, emails and URLs.",
                 fontSize = 13.sp,
                 color = EditorialTextSecondary,
                 lineHeight = 18.sp
@@ -607,11 +614,13 @@ private fun EditorialTabItem(
 
     Box(
         modifier = modifier
+            .defaultMinSize(minHeight = 40.dp)
             .clip(RoundedCornerShape(2.dp))
             .background(bg)
             .border(1.dp, borderCol, RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 7.dp),
+            .padding(vertical = 8.dp)
+            .testTag("tab_${label.lowercase().take(8)}"),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -998,10 +1007,13 @@ private fun ScannerModePill(
 ) {
     Box(
         modifier = Modifier
+            .defaultMinSize(minHeight = 32.dp, minWidth = 44.dp)
             .background(if (isActive) EditorialDeepBlack else EditorialSurfaceWhite)
             .border(1.dp, if (isActive) EditorialDeepBlack else EditorialBorder, RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .testTag("mode_${label.lowercase()}"),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
@@ -1047,7 +1059,7 @@ private fun EditorialLoadingCard() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "HEURISTIC SCAN IN PROGRESS // ZERO-DAY INSPECTOR",
+                    text = "HEURISTIC SCAN IN PROGRESS // THREAT INSPECTOR",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
@@ -1099,6 +1111,7 @@ private fun EditorialErrorCard(
             .background(RiskCriticalRedBg)
             .border(1.dp, RiskCriticalRedBorder, RoundedCornerShape(2.dp))
             .padding(14.dp)
+            .testTag("error_card")
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1136,7 +1149,8 @@ private fun EditorialErrorCard(
                 onClick = onRetry,
                 shape = RoundedCornerShape(2.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, RiskCriticalRed),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                modifier = Modifier.testTag("retry_button")
             ) {
                 Text(
                     text = "RETRY",
@@ -1160,10 +1174,36 @@ private fun EditorialResultAssessment(
 ) {
     val isFraud = result.isFraud
     val riskScore = result.estimatedRiskScore
-    val riskColor = if (isFraud) RiskCriticalRed else RiskSafeGreen
-    val riskBg = if (isFraud) RiskCriticalRedBg else RiskSafeGreenBg
-    val riskBorder = if (isFraud) RiskCriticalRedBorder else RiskSafeGreenBorder
-    val verdictLabel = if (isFraud) "FRAUD DETECTED // HIGH CONFIDENCE" else "VERIFIED SAFE // NO THREAT SIGNALS"
+    val riskColor = when (result.riskLevel) {
+        RiskLevel.CRITICAL -> RiskCriticalRed
+        RiskLevel.HIGH -> RiskCriticalRed
+        RiskLevel.MEDIUM -> RiskWarningOrange
+        RiskLevel.LOW -> RiskSafeGreen
+    }
+    val riskBg = when (result.riskLevel) {
+        RiskLevel.CRITICAL -> RiskCriticalRedBg
+        RiskLevel.HIGH -> RiskCriticalRedBg
+        RiskLevel.MEDIUM -> RiskWarningOrangeBg
+        RiskLevel.LOW -> RiskSafeGreenBg
+    }
+    val riskBorder = when (result.riskLevel) {
+        RiskLevel.CRITICAL -> RiskCriticalRedBorder
+        RiskLevel.HIGH -> RiskCriticalRedBorder
+        RiskLevel.MEDIUM -> RiskWarningOrangeBorder
+        RiskLevel.LOW -> RiskSafeGreenBorder
+    }
+    val verdictLabel = when (result.riskLevel) {
+        RiskLevel.CRITICAL -> "CRITICAL THREAT // FRAUD DETECTED"
+        RiskLevel.HIGH -> "HIGH RISK // FRAUD DETECTED"
+        RiskLevel.MEDIUM -> "SUSPICIOUS // EXERCISE CAUTION"
+        RiskLevel.LOW -> "VERIFIED SAFE // NO THREAT SIGNALS"
+    }
+    val verdictSubText = when (result.riskLevel) {
+        RiskLevel.CRITICAL -> "Immediate caution advised: Do not interact, click links, or reply"
+        RiskLevel.HIGH -> "High probability of phishing or scam: Do not engage"
+        RiskLevel.MEDIUM -> "Potential security risk detected: Exercise caution before responding"
+        RiskLevel.LOW -> "Message passed heuristic security verification"
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -1188,7 +1228,11 @@ private fun EditorialResultAssessment(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = if (isFraud) Icons.Default.Warning else Icons.Default.CheckCircle,
+                        imageVector = when (result.riskLevel) {
+                            RiskLevel.CRITICAL, RiskLevel.HIGH -> Icons.Default.Warning
+                            RiskLevel.MEDIUM -> Icons.Default.Warning
+                            RiskLevel.LOW -> Icons.Default.CheckCircle
+                        },
                         contentDescription = null,
                         tint = riskColor,
                         modifier = Modifier.size(22.dp)
@@ -1204,7 +1248,7 @@ private fun EditorialResultAssessment(
                             letterSpacing = 0.5.sp
                         )
                         Text(
-                            text = if (isFraud) "Immediate caution advised: Do not interact or reply" else "Message passed zero-trust heuristic verification",
+                            text = verdictSubText,
                             fontSize = 11.5.sp,
                             color = EditorialDeepBlack
                         )
@@ -1781,10 +1825,13 @@ private fun BottomNavItem(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
+            .defaultMinSize(minWidth = 52.dp, minHeight = 48.dp)
             .clip(RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .testTag("nav_${label.lowercase()}")
     ) {
         Icon(
             imageVector = icon,

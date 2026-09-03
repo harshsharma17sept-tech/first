@@ -11,6 +11,18 @@ object HeuristicRuleEngine {
         "(?i)\\b(?:https?://|www\\.)[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
     )
 
+    private val BARE_DOMAIN_REGEX = Pattern.compile(
+        "(?i)\\b[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.(?:com|org|net|xyz|top|info|biz|club|work|click|loan|live|tk|ml|ga|cf|gq|cc|ru|cn)(?:/[^\\s]*)?"
+    )
+
+    private val EMAIL_REGEX = Pattern.compile(
+        "(?i)\\b[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})\\b"
+    )
+
+    private val FREE_WEBMAIL_DOMAINS = listOf(
+        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com", "protonmail.com"
+    )
+
     // Keywords and expressions by threat category
     private val OTP_PATTERNS = listOf(
         Pattern.compile("(?i)\\b(otp|one[ -]?time[ -]?password|verification[ -]?code|2fa|security[ -]?code)\\b"),
@@ -50,8 +62,28 @@ object HeuristicRuleEngine {
         val urls = mutableListOf<String>()
         val matcher = URL_REGEX.matcher(text)
         while (matcher.find()) {
-            urls.add(matcher.group())
+            val u = matcher.group()
+            if (!urls.contains(u)) urls.add(u)
         }
+
+        // Also capture bare domains or URLs when input is URL mode or single domain token
+        val domainMatcher = BARE_DOMAIN_REGEX.matcher(text)
+        while (domainMatcher.find()) {
+            val d = domainMatcher.group()
+            if (!urls.any { it.contains(d) }) {
+                urls.add(d)
+            }
+        }
+
+        // Also capture email domains for analysis
+        val emailMatcher = EMAIL_REGEX.matcher(text)
+        while (emailMatcher.find()) {
+            val domain = emailMatcher.group(1)
+            if (domain != null && !urls.any { it.contains(domain) }) {
+                urls.add("https://$domain")
+            }
+        }
+
         return urls
     }
 
@@ -90,7 +122,11 @@ object HeuristicRuleEngine {
                 }
 
                 // 3. Deceptive subdomain spoofing (e.g. paypal.security-update.com)
-                val targetedBrands = listOf("paypal", "chase", "wellsfargo", "bankofamerica", "netflix", "apple", "amazon", "google", "usps", "fedex", "dhl")
+                val targetedBrands = listOf(
+                    "paypal", "chase", "wellsfargo", "bankofamerica", "citibank", "netflix",
+                    "apple", "amazon", "google", "microsoft", "meta", "facebook", "usps",
+                    "fedex", "dhl", "irs", "coinbase", "binance"
+                )
                 for (brand in targetedBrands) {
                     if (host.contains(brand) && !host.endsWith(".$brand.com") && host != "$brand.com") {
                         isSuspicious = true
@@ -223,6 +259,28 @@ object HeuristicRuleEngine {
                     )
                 )
                 break
+            }
+        }
+
+        // Check Email Phishing: Official Banking or Authority from free public webmail
+        val hasOfficialClaim = detections.any { 
+            it.triggerName.contains("Banking", ignoreCase = true) || 
+            it.triggerName.contains("Government", ignoreCase = true) 
+        }
+        if (hasOfficialClaim) {
+            val emailMatcher = EMAIL_REGEX.matcher(message)
+            while (emailMatcher.find()) {
+                val domain = emailMatcher.group(1)?.lowercase() ?: ""
+                if (FREE_WEBMAIL_DOMAINS.any { domain.contains(it) }) {
+                    detections.add(
+                        HeuristicDetection(
+                            triggerName = "Public Webmail Spoofing",
+                            description = "Official institutional notice originating from public free webmail address ($domain).",
+                            severityPoints = 35
+                        )
+                    )
+                    break
+                }
             }
         }
 

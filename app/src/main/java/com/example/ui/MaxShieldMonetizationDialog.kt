@@ -179,7 +179,7 @@ fun MaxShieldMonetizationDialog(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Upgrade to MaxShield Pro for continuous AI heuristic interception, zero-day threat quarantine, and automated link analysis.",
+                    text = "Upgrade to MaxShield Pro for continuous AI heuristic interception, automated threat quarantine, and advanced link analysis.",
                     fontSize = 13.sp,
                     color = EditorialTextSecondary,
                     lineHeight = 18.sp
@@ -202,7 +202,7 @@ fun MaxShieldMonetizationDialog(
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
                     EditorialFeatureRow(
                         index = "02",
-                        title = "Unlimited Gemini Zero-Trust Scans",
+                        title = "Unlimited Gemini Neural Deep Scans",
                         description = "Full heuristic deep scans with no daily throttles"
                     )
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
