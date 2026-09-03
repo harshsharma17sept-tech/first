@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,30 +41,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.ui.theme.GoldAccent
-import com.example.ui.theme.GoldAccentGlow
-import com.example.ui.theme.GoldBorder
-import com.example.ui.theme.GoldContainer
-import com.example.ui.theme.HeroCardGlass
-import com.example.ui.theme.HeroCyanGlow
-import com.example.ui.theme.HeroElectricBlue
-import com.example.ui.theme.IndigoBorder
-import com.example.ui.theme.IndigoCanvasDark
-import com.example.ui.theme.IndigoSurface
-import com.example.ui.theme.IndigoSurfaceHover
-import com.example.ui.theme.SafeGreen
-import com.example.ui.theme.TextHighEmphasis
-import com.example.ui.theme.TextMediumEmphasis
-import com.example.ui.theme.TextMuted
+import com.example.ui.theme.EditorialAccentOrange
+import com.example.ui.theme.EditorialBackground
+import com.example.ui.theme.EditorialBorder
+import com.example.ui.theme.EditorialBorderDark
+import com.example.ui.theme.EditorialDeepBlack
+import com.example.ui.theme.EditorialOrangeBg
+import com.example.ui.theme.EditorialOrangeBorder
+import com.example.ui.theme.EditorialSurface
+import com.example.ui.theme.EditorialSurfaceMuted
+import com.example.ui.theme.EditorialSurfaceWhite
+import com.example.ui.theme.EditorialTextMuted
+import com.example.ui.theme.EditorialTextPrimary
+import com.example.ui.theme.EditorialTextSecondary
 
 private enum class MonetizedPlan(
     val id: String,
@@ -117,10 +113,10 @@ fun MaxShieldMonetizationDialog(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(26.dp))
-                .background(IndigoCanvasDark)
-                .border(1.5.dp, GoldBorder, RoundedCornerShape(26.dp))
+                .fillMaxWidth(0.94f)
+                .clip(RoundedCornerShape(4.dp))
+                .background(EditorialSurface)
+                .border(1.dp, EditorialBorder, RoundedCornerShape(4.dp))
                 .testTag("maxshield_monetization_dialog")
         ) {
             Column(
@@ -128,166 +124,204 @@ fun MaxShieldMonetizationDialog(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
                     .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.Start
             ) {
-                // Top close button
+                // Top header bar with technical label and close button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(GoldContainer)
-                            .border(1.dp, GoldAccent.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = GoldAccentGlow,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "MONETIZED TIER",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Black,
-                                color = GoldAccentGlow,
-                                letterSpacing = 0.8.sp
-                            )
-                        }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .background(EditorialAccentOrange)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "MAXSHIELD // PRO CYBERLAB",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialDeepBlack,
+                            letterSpacing = 1.sp
+                        )
                     }
 
                     IconButton(
                         onClick = onDismiss,
                         modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(IndigoSurfaceHover)
+                            .size(28.dp)
+                            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TextMediumEmphasis,
-                            modifier = Modifier.size(18.dp)
+                            tint = EditorialDeepBlack,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Glowing Shield Crest Icon
-                Box(
-                    modifier = Modifier
-                        .size(68.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(GoldAccent.copy(alpha = 0.35f), Color.Transparent)
-                            )
-                        )
-                        .border(2.dp, GoldAccent, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "MaxShield",
-                        tint = GoldAccentGlow,
-                        modifier = Modifier.size(38.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                // Oversized editorial headline
                 Text(
-                    text = "Upgrade to MaxShield Pro",
-                    fontSize = 21.sp,
+                    text = "AUTONOMOUS\nTHREAT DEFENSE.",
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
-                    color = TextHighEmphasis,
-                    textAlign = TextAlign.Center
+                    lineHeight = 27.sp,
+                    letterSpacing = (-0.5).sp,
+                    color = EditorialDeepBlack
                 )
 
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
-                    text = "Autonomous zero-trust protection, automated SMS interceptor, and 24/7 fraud concierge.",
-                    fontSize = 12.sp,
-                    color = TextMediumEmphasis,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 17.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    text = "Upgrade to MaxShield Pro for continuous AI heuristic interception, zero-day threat quarantine, and automated link analysis.",
+                    fontSize = 13.sp,
+                    color = EditorialTextSecondary,
+                    lineHeight = 18.sp
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Feature Comparison List
+                // Feature Checklist in modular bordered rows
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                        .background(EditorialSurfaceWhite)
                 ) {
-                    MonetizedFeatureRow(
+                    EditorialFeatureRow(
+                        index = "01",
                         title = "24/7 Autonomous SMS Auto-Firewall",
-                        description = "Pre-screens smishing and quarantined links in the background before you tap"
+                        description = "Pre-screens smishing and quarantined links in background"
                     )
-                    MonetizedFeatureRow(
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                    EditorialFeatureRow(
+                        index = "02",
                         title = "Unlimited Gemini Zero-Trust Scans",
-                        description = "Full heuristic deep scans with no daily limits or throttled quotas"
+                        description = "Full heuristic deep scans with no daily throttles"
                     )
-                    MonetizedFeatureRow(
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                    EditorialFeatureRow(
+                        index = "03",
                         title = "Deepfake & Audio Voice Scam Guard",
-                        description = "Acoustic AI biometric fingerprinting filters impersonation phone calls"
+                        description = "Acoustic AI fingerprinting against impersonation"
                     )
-                    MonetizedFeatureRow(
-                        title = "$1,000,000 Fraud Coverage & Direct Bank Line",
-                        description = "Priority emergency dispatch hotline with certified fraud restoration counsel"
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                    EditorialFeatureRow(
+                        index = "04",
+                        title = "$1,000,000 Fraud Restoration Coverage",
+                        description = "Priority emergency dispatch hotline with certified counsel"
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                // Plan Selector Cards
                 Text(
-                    text = "CHOOSE YOUR DEFENSE PLAN",
-                    fontSize = 10.5.sp,
+                    text = "SELECT PLAN // MODULAR SUBSCRIPTION",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextMuted,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.fillMaxWidth()
+                    color = EditorialTextMuted,
+                    letterSpacing = 1.sp
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Plan Selector Cards
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     MonetizedPlan.values().forEach { plan ->
-                        PlanOptionCard(
-                            plan = plan,
-                            isSelected = selectedPlan == plan,
-                            onClick = { selectedPlan = plan }
+                        val isSelected = selectedPlan == plan
+                        val borderColor by animateColorAsState(
+                            targetValue = if (isSelected) EditorialAccentOrange else EditorialBorder,
+                            label = "plan_border"
                         )
+                        val bgColor by animateColorAsState(
+                            targetValue = if (isSelected) EditorialOrangeBg else EditorialSurfaceWhite,
+                            label = "plan_bg"
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(bgColor)
+                                .border(if (isSelected) 1.5.dp else 1.dp, borderColor, RoundedCornerShape(2.dp))
+                                .clickable { selectedPlan = plan }
+                                .padding(12.dp)
+                                .testTag("plan_card_${plan.id}"),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = plan.title,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = EditorialDeepBlack
+                                    )
+                                    if (plan.badge != null) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .background(EditorialAccentOrange)
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = plan.badge,
+                                                fontSize = 8.5.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = plan.trialInfo,
+                                    fontSize = 11.sp,
+                                    color = EditorialTextSecondary
+                                )
+                            }
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = plan.price,
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (isSelected) EditorialAccentOrange else EditorialDeepBlack
+                                )
+                                Text(
+                                    text = plan.period,
+                                    fontSize = 10.sp,
+                                    color = EditorialTextMuted
+                                )
+                            }
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Big Upgrade CTA Button
+                // Primary CTA Button (Accent Orange)
                 Button(
                     onClick = { onSubscribe(selectedPlan.id) },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(GoldAccent, GoldAccentGlow, HeroElectricBlue)
-                            )
-                        )
-                        .testTag("subscribe_maxshield_button")
+                        .height(48.dp)
+                        .testTag("subscribe_maxshield_button"),
+                    shape = RoundedCornerShape(2.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = EditorialAccentOrange,
+                        contentColor = Color.White
+                    )
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -296,41 +330,27 @@ fun MaxShieldMonetizationDialog(
                         Icon(
                             imageVector = Icons.Default.Bolt,
                             contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.White
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isCurrentPro) "Manage Active Subscription" else "Start 7-Day Free Trial",
-                            fontSize = 14.5.sp,
+                            text = if (isCurrentPro) "UPDATE SUBSCRIPTION" else "ACTIVATE PRO SHIELD",
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color.Black
+                            letterSpacing = 0.5.sp
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Not now", fontSize = 11.5.sp, color = TextMuted)
-                    }
-                    TextButton(onClick = { onSubscribe(selectedPlan.id) }) {
-                        Text("Restore Purchases", fontSize = 11.5.sp, color = TextMediumEmphasis)
-                    }
-                }
-
                 Text(
-                    text = "Recurring billing via Google Play. Cancel anytime in Google Play Store subscriptions. Terms of Service & Zero-Trust Privacy Guarantee apply.",
-                    fontSize = 9.5.sp,
-                    color = TextMuted,
+                    text = "Encrypted 256-bit checkout • Cancel anytime • Google Play Billing",
+                    fontSize = 10.5.sp,
+                    color = EditorialTextMuted,
                     textAlign = TextAlign.Center,
-                    lineHeight = 13.sp,
-                    modifier = Modifier.padding(horizontal = 10.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -338,150 +358,38 @@ fun MaxShieldMonetizationDialog(
 }
 
 @Composable
-private fun MonetizedFeatureRow(
+private fun EditorialFeatureRow(
+    index: String,
     title: String,
     description: String
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(IndigoSurface)
-            .border(1.dp, IndigoBorder, RoundedCornerShape(12.dp))
             .padding(10.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(SafeGreen.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = SafeGreen,
-                modifier = Modifier.size(13.dp)
-            )
-        }
+        Text(
+            text = index,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = EditorialAccentOrange
+        )
         Spacer(modifier = Modifier.width(10.dp))
         Column {
             Text(
                 text = title,
-                fontSize = 12.sp,
+                fontSize = 12.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextHighEmphasis
+                color = EditorialDeepBlack
             )
             Text(
                 text = description,
-                fontSize = 10.5.sp,
-                color = TextMediumEmphasis,
-                lineHeight = 14.sp
+                fontSize = 11.sp,
+                color = EditorialTextSecondary,
+                lineHeight = 15.sp
             )
-        }
-    }
-}
-
-@Composable
-private fun PlanOptionCard(
-    plan: MonetizedPlan,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val borderColor by animateColorAsState(
-        targetValue = if (isSelected) GoldAccent else IndigoBorder,
-        label = "plan_border"
-    )
-    val bgColor by animateColorAsState(
-        targetValue = if (isSelected) GoldContainer else IndigoSurface,
-        label = "plan_bg"
-    )
-
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(if (isSelected) 1.8.dp else 1.dp, borderColor, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .testTag("plan_card_${plan.id}")
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Radio indicator
-                Box(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clip(CircleShape)
-                        .border(1.5.dp, if (isSelected) GoldAccent else TextMuted, CircleShape)
-                        .background(if (isSelected) GoldAccent else Color.Transparent),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isSelected) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = plan.title,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextHighEmphasis
-                        )
-                        if (plan.badge != null) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(GoldAccent)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = plan.badge,
-                                    fontSize = 8.5.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.Black
-                                )
-                            }
-                        }
-                    }
-                    Text(
-                        text = plan.trialInfo,
-                        fontSize = 10.sp,
-                        color = if (isSelected) GoldAccentGlow else TextMuted
-                    )
-                }
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = plan.price,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Black,
-                    color = if (isSelected) GoldAccentGlow else TextHighEmphasis
-                )
-                Text(
-                    text = plan.period,
-                    fontSize = 10.sp,
-                    color = TextMuted
-                )
-            }
         }
     }
 }

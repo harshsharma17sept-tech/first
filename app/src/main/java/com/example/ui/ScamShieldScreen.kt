@@ -5,7 +5,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -15,10 +14,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,39 +30,36 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AcUnit
-import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -78,21 +74,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,48 +99,26 @@ import com.example.model.RiskLevel
 import com.example.model.ScamAnalysisResult
 import com.example.model.ScanHistoryItem
 import com.example.model.UrlAnalysis
-import com.example.ui.theme.FraudRed
-import com.example.ui.theme.FraudRedBorder
-import com.example.ui.theme.FraudRedContainer
-import com.example.ui.theme.GlassBorderLuminous
-import com.example.ui.theme.GlassBorderSubtle
-import com.example.ui.theme.GlassSkeletonBase
-import com.example.ui.theme.GlassSkeletonHighlight
-import com.example.ui.theme.GlassSurfaceElevated
-import com.example.ui.theme.GlassSurfaceUltra
-import com.example.ui.theme.GoldAccent
-import com.example.ui.theme.GoldAccentGlow
-import com.example.ui.theme.GoldBorder
-import com.example.ui.theme.GoldContainer
-import com.example.ui.theme.GridDotColor
-import com.example.ui.theme.HeroCanvasDark
-import com.example.ui.theme.HeroCardGlass
-import com.example.ui.theme.HeroCardGlassBorder
-import com.example.ui.theme.HeroCardGlassHover
-import com.example.ui.theme.HeroCyanGlow
-import com.example.ui.theme.HeroElectricBlue
-import com.example.ui.theme.HeroEmerald
-import com.example.ui.theme.HeroHotPink
-import com.example.ui.theme.HeroNeonPurple
-import com.example.ui.theme.IndigoBorder
-import com.example.ui.theme.IndigoBorderFocused
-import com.example.ui.theme.IndigoCanvasDark
-import com.example.ui.theme.IndigoSurface
-import com.example.ui.theme.IndigoSurfaceHover
-import com.example.ui.theme.RiskCriticalMagenta
-import com.example.ui.theme.RiskHighRose
-import com.example.ui.theme.RiskLowGreen
-import com.example.ui.theme.RiskMediumAmber
-import com.example.ui.theme.SafeGreen
-import com.example.ui.theme.SafeGreenBorder
-import com.example.ui.theme.SafeGreenContainer
-import com.example.ui.theme.SoftSage
-import com.example.ui.theme.SoftSageContainer
-import com.example.ui.theme.SoftSageLight
-import com.example.ui.theme.SoftSageOnContainer
-import com.example.ui.theme.TextHighEmphasis
-import com.example.ui.theme.TextMediumEmphasis
-import com.example.ui.theme.TextMuted
+import com.example.ui.theme.EditorialAccentOrange
+import com.example.ui.theme.EditorialBackground
+import com.example.ui.theme.EditorialBorder
+import com.example.ui.theme.EditorialBorderDark
+import com.example.ui.theme.EditorialDeepBlack
+import com.example.ui.theme.EditorialOrangeBg
+import com.example.ui.theme.EditorialOrangeBorder
+import com.example.ui.theme.EditorialOrangeHover
+import com.example.ui.theme.EditorialSurface
+import com.example.ui.theme.EditorialSurfaceMuted
+import com.example.ui.theme.EditorialSurfaceWhite
+import com.example.ui.theme.EditorialTextMuted
+import com.example.ui.theme.EditorialTextPrimary
+import com.example.ui.theme.EditorialTextSecondary
+import com.example.ui.theme.RiskCriticalRed
+import com.example.ui.theme.RiskCriticalRedBg
+import com.example.ui.theme.RiskCriticalRedBorder
+import com.example.ui.theme.RiskSafeGreen
+import com.example.ui.theme.RiskSafeGreenBg
+import com.example.ui.theme.RiskSafeGreenBorder
 import kotlinx.coroutines.launch
 
 @Composable
@@ -160,6 +137,7 @@ fun ScamShieldScreen(
     val scope = rememberCoroutineScope()
 
     var exampleIndex by remember { mutableIntStateOf(0) }
+    var scannerMode by remember { mutableStateOf("MESSAGE") }
 
     // MaxShield Pro Monetization Paywall Modal
     if (showMaxShieldPaywall) {
@@ -169,7 +147,7 @@ fun ScamShieldScreen(
             onSubscribe = { plan ->
                 viewModel.subscribeMaxShieldPro(plan)
                 scope.launch {
-                    snackbarHostState.showSnackbar("🎉 MaxShield Pro Activated! 24/7 AI Defense Enabled.")
+                    snackbarHostState.showSnackbar("MaxShield Pro Activated. 24/7 Zero-Trust Defense Enabled.")
                 }
             }
         )
@@ -178,13 +156,12 @@ fun ScamShieldScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            InboxHeroBottomBar(
+            EditorialBottomBar(
                 selectedIndex = bottomNavIndex,
                 onSelect = { index ->
                     viewModel.selectBottomNav(index)
                     when (index) {
                         0 -> {
-                            viewModel.clearMessage()
                             viewModel.selectTab(AnalysisTab.OVERVIEW)
                         }
                         1 -> {
@@ -201,73 +178,72 @@ fun ScamShieldScreen(
                 }
             )
         },
-        containerColor = HeroCanvasDark,
+        containerColor = EditorialBackground,
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF13172E),
-                            Color(0xFF0D1021),
-                            Color(0xFF080A14)
-                        )
-                    )
-                )
+                .background(EditorialBackground)
         ) {
-            // Ambient glowing cyber-mesh background overlay
-            CyberGridBackground(modifier = Modifier.fillMaxSize())
+            // Subtle 1px modular grid pattern on warm light-gray canvas
+            EditorialGridBackground(modifier = Modifier.fillMaxSize())
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 18.dp)
+                    .padding(horizontal = 16.dp)
                     .statusBarsPadding()
                     .imePadding(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top Header with Back, Title, Notification Bell
+                // Editorial Header Navigation Bar
                 item {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    HeroTopBar(
-                        onBack = { viewModel.clearMessage() },
-                        onMenu = {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    EditorialHeader(
+                        isPro = isMaxShieldPro,
+                        onScanNow = {
+                            viewModel.selectTab(AnalysisTab.OVERVIEW)
+                            viewModel.analyzeCurrentMessage()
+                        },
+                        onProClick = viewModel::openMaxShieldPaywall,
+                        onMenuClick = {
                             scope.launch {
-                                snackbarHostState.showSnackbar("Inbox Hero Threat Shield v2.4 Active")
+                                snackbarHostState.showSnackbar("ScamShield Cybersecurity Lab v2.6.4 Active")
                             }
                         }
                     )
                 }
 
-                // Title & Subtitle Banner
+                // Dramatic Editorial Hero Section
                 item {
-                    HeroHeaderBanner(hasAnalysis = uiState is ScamUiState.Success)
+                    EditorialHeroSection(
+                        hasAnalysis = uiState is ScamUiState.Success,
+                        onModeChange = { mode -> scannerMode = mode }
+                    )
                 }
 
-                // 4-Segment Filter Chips (Overview / Graph / Timeline / History)
+                // 4-Segment Navigation Tabs (Overview / Graph / Timeline / History)
                 item {
-                    SegmentedTabRow(
+                    EditorialSegmentedTabs(
                         selectedTab = selectedTab,
                         historyCount = scanHistory.size,
                         onTabSelect = viewModel::selectTab
                     )
                 }
 
-                // Quick Security Status Glass Widget (with MaxShield Monetization)
+                // Security Status & MaxShield Subscription Module
                 item {
-                    GlassSecurityMetricsWidget(
+                    EditorialSecurityStatusModule(
                         threatScannedCount = 184 + scanHistory.size,
-                        shieldsActive = true,
-                        isMaxShieldPro = isMaxShieldPro,
+                        isPro = isMaxShieldPro,
                         onUpgradeClick = viewModel::openMaxShieldPaywall
                     )
                 }
 
-                // Condition content based on selected tab:
+                // Main Content depending on Tab
                 if (selectedTab == AnalysisTab.HISTORY) {
                     item {
                         ThreatHistorySection(
@@ -284,15 +260,16 @@ fun ScamShieldScreen(
                         )
                     }
                 } else {
-                    // Input Box / Message Scanner Card
+                    // Main Scanner Workstation
                     item {
-                        GlassMessageInputCard(
+                        EditorialScannerWorkstation(
                             text = messageInput,
+                            activeMode = scannerMode,
+                            onModeSelect = { scannerMode = it },
                             onTextChange = viewModel::onMessageChange,
                             onClear = viewModel::clearMessage,
                             onExampleClick = {
-                                viewModel.loadExample(exampleIndex)
-                                exampleIndex++
+                                viewModel.loadExample(exampleIndex++)
                             },
                             onSelectPreset = { preset ->
                                 viewModel.loadPreset(preset)
@@ -308,7 +285,7 @@ fun ScamShieldScreen(
                             visible = uiState is ScamUiState.Loading,
                             enter = fadeIn()
                         ) {
-                            NeonLoadingCard()
+                            EditorialLoadingCard()
                         }
                     }
 
@@ -319,7 +296,10 @@ fun ScamShieldScreen(
                             enter = fadeIn()
                         ) {
                             if (uiState is ScamUiState.Error) {
-                                GlassErrorCard(message = (uiState as ScamUiState.Error).message)
+                                EditorialErrorCard(
+                                    message = (uiState as ScamUiState.Error).message,
+                                    onRetry = viewModel::analyzeCurrentMessage
+                                )
                             }
                         }
                     }
@@ -333,7 +313,7 @@ fun ScamShieldScreen(
                             if (uiState is ScamUiState.Success) {
                                 val result = (uiState as ScamUiState.Success).result
                                 when (selectedTab) {
-                                    AnalysisTab.OVERVIEW -> ThreatOverviewSection(
+                                    AnalysisTab.OVERVIEW -> EditorialResultAssessment(
                                         result = result,
                                         onActionTaken = { actionName ->
                                             scope.launch {
@@ -341,8 +321,8 @@ fun ScamShieldScreen(
                                             }
                                         }
                                     )
-                                    AnalysisTab.GRAPH -> ThreatGraphSection(result = result)
-                                    AnalysisTab.TIMELINE -> ThreatTimelineSection(result = result)
+                                    AnalysisTab.GRAPH -> EditorialGraphSection(result = result)
+                                    AnalysisTab.TIMELINE -> EditorialTimelineSection(result = result)
                                     AnalysisTab.HISTORY -> { /* Rendered above */ }
                                 }
                             }
@@ -350,319 +330,397 @@ fun ScamShieldScreen(
                     }
                 }
 
-                // Footer & Safety Badge
+                // Editorial Footer & Disclaimer
                 item {
-                    HeroPrivacyDisclaimer()
-                    Spacer(modifier = Modifier.height(18.dp))
+                    EditorialFooter()
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
     }
 }
 
+// =========================================================================
+// 1. HEADER COMPONENT
+// =========================================================================
 @Composable
-private fun HeroTopBar(
-    onBack: () -> Unit,
-    onMenu: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back Pill
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape)
-                .background(HeroCardGlass)
-                .border(1.dp, HeroCardGlassBorder, CircleShape)
-                .clickable(onClick = onBack),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = TextHighEmphasis,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        // Center Title
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(HeroCyanGlow)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Analyze Threat",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextHighEmphasis,
-                letterSpacing = 0.5.sp
-            )
-        }
-
-        // Right Action Pill
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape)
-                .background(HeroCardGlass)
-                .border(1.dp, HeroCardGlassBorder, CircleShape)
-                .clickable(onClick = onMenu),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = TextHighEmphasis,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun HeroHeaderBanner(hasAnalysis: Boolean) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            text = if (hasAnalysis) "Suspicious Threat Identified" else "Inbox Hero Security",
-            fontSize = 25.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = TextHighEmphasis,
-            lineHeight = 30.sp,
-            modifier = Modifier.testTag("app_title")
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = if (hasAnalysis) "High risk activity and deceptive signals isolated" else "Real-time AI message threat scanner & link guard",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Normal,
-            color = TextMediumEmphasis
-        )
-    }
-}
-
-@Composable
-private fun SegmentedTabRow(
-    selectedTab: AnalysisTab,
-    historyCount: Int,
-    onTabSelect: (AnalysisTab) -> Unit
+private fun EditorialHeader(
+    isPro: Boolean,
+    onScanNow: () -> Unit,
+    onProClick: () -> Unit,
+    onMenuClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(IndigoSurface)
-            .border(1.dp, IndigoBorder, RoundedCornerShape(24.dp))
-            .padding(4.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            AnalysisTab.values().forEach { tab ->
-                val isSelected = tab == selectedTab
-                val animatedBg by animateColorAsState(
-                    targetValue = if (isSelected) IndigoSurfaceHover else Color.Transparent,
-                    label = "tab_bg"
-                )
-                val animatedTextColor by animateColorAsState(
-                    targetValue = if (isSelected) HeroCyanGlow else TextMediumEmphasis,
-                    label = "tab_text"
-                )
-
+            // LEFT: SCAMSHIELD Wordmark with orange square marker
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onMenuClick)
+            ) {
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(animatedBg)
-                        .clickable { onTabSelect(tab) }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center
+                        .size(8.dp)
+                        .background(EditorialAccentOrange)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "SCAMSHIELD",
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 17.sp,
+                    letterSpacing = 1.2.sp,
+                    color = EditorialDeepBlack
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "// LAB",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = EditorialTextMuted
+                )
+            }
+
+            // RIGHT: Pro Badge & Orange CTA "SCAN NOW"
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isPro) {
+                    Box(
+                        modifier = Modifier
+                            .background(EditorialDeepBlack)
+                            .padding(horizontal = 7.dp, vertical = 4.dp)
+                            .clickable(onClick = onProClick)
+                    ) {
+                        Text(
+                            text = "PRO ACTIVE",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialAccentOrange
+                        )
+                    }
+                }
+
+                // Orange CTA: SCAN NOW
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(EditorialAccentOrange)
+                        .clickable(onClick = onScanNow)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Text(
-                        text = when (tab) {
-                            AnalysisTab.OVERVIEW -> "Overview"
-                            AnalysisTab.GRAPH -> "Graph"
-                            AnalysisTab.TIMELINE -> "Timeline"
-                            AnalysisTab.HISTORY -> if (historyCount > 0) "History ($historyCount)" else "History"
-                        },
-                        fontSize = 12.5.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = animatedTextColor
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "SCAN NOW",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+// =========================================================================
+// 2. HERO SECTION
+// =========================================================================
 @Composable
-private fun GlassSecurityMetricsWidget(
-    threatScannedCount: Int,
-    shieldsActive: Boolean,
-    isMaxShieldPro: Boolean,
-    onUpgradeClick: () -> Unit,
+private fun EditorialHeroSection(
+    hasAnalysis: Boolean,
+    onModeChange: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(18.dp)
+    ) {
+        Column {
+            // Technical metadata strip
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .background(EditorialAccentOrange)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "AI-POWERED THREAT DETECTION",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = EditorialTextMuted,
+                        letterSpacing = 0.8.sp
+                    )
+                }
+
+                Text(
+                    text = "SYS_VER: 2.6.4 // ZERO-TRUST",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 9.sp,
+                    color = EditorialTextMuted
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Oversized Editorial Typography
+            Text(
+                text = if (hasAnalysis) "ANALYSIS\nCOMPLETE." else "THINK\nBEFORE\nYOU CLICK.",
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Black,
+                lineHeight = 38.sp,
+                letterSpacing = (-1.2).sp,
+                color = EditorialDeepBlack,
+                modifier = Modifier.testTag("app_title")
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Subtitle description with technical markers
+            Text(
+                text = "Autonomous cybersecurity workstation inspecting SMS, emails, and URLs for social engineering, coercive payment hooks, and zero-day phish.",
+                fontSize = 13.sp,
+                color = EditorialTextSecondary,
+                lineHeight = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Technical telemetry checklist in modular grid
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                    .background(EditorialSurfaceWhite)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                TelemetryTickItem(label = "HEURISTICS", value = "ARMED")
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(EditorialBorder))
+                TelemetryTickItem(label = "PHISH FILTER", value = "ACTIVE")
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(EditorialBorder))
+                TelemetryTickItem(label = "NEURAL MODEL", value = "GEMINI")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TelemetryTickItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = EditorialDeepBlack
+        )
+        Text(
+            text = label,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 8.5.sp,
+            color = EditorialTextMuted
+        )
+    }
+}
+
+// =========================================================================
+// 3. SEGMENTED NAVIGATION TABS
+// =========================================================================
+@Composable
+private fun EditorialSegmentedTabs(
+    selectedTab: AnalysisTab,
+    historyCount: Int,
+    onTabSelect: (AnalysisTab) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        EditorialTabItem(
+            label = "OVERVIEW",
+            isSelected = selectedTab == AnalysisTab.OVERVIEW,
+            onClick = { onTabSelect(AnalysisTab.OVERVIEW) },
+            modifier = Modifier.weight(1f)
+        )
+        EditorialTabItem(
+            label = "GRAPH",
+            isSelected = selectedTab == AnalysisTab.GRAPH,
+            onClick = { onTabSelect(AnalysisTab.GRAPH) },
+            modifier = Modifier.weight(1f)
+        )
+        EditorialTabItem(
+            label = "TIMELINE",
+            isSelected = selectedTab == AnalysisTab.TIMELINE,
+            onClick = { onTabSelect(AnalysisTab.TIMELINE) },
+            modifier = Modifier.weight(1f)
+        )
+        EditorialTabItem(
+            label = if (historyCount > 0) "LOGS ($historyCount)" else "LOGS",
+            isSelected = selectedTab == AnalysisTab.HISTORY,
+            onClick = { onTabSelect(AnalysisTab.HISTORY) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun EditorialTabItem(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+    val bg = if (isSelected) EditorialDeepBlack else EditorialSurfaceWhite
+    val textCol = if (isSelected) Color.White else EditorialTextSecondary
+    val borderCol = if (isSelected) EditorialDeepBlack else EditorialBorder
+
+    Box(
         modifier = modifier
+            .clip(RoundedCornerShape(2.dp))
+            .background(bg)
+            .border(1.dp, borderCol, RoundedCornerShape(2.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 7.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = textCol,
+            maxLines = 1
+        )
+    }
+}
+
+// =========================================================================
+// 4. SECURITY STATUS & MAXSHIELD MONETIZATION MODULE
+// =========================================================================
+@Composable
+private fun EditorialSecurityStatusModule(
+    threatScannedCount: Int,
+    isPro: Boolean,
+    onUpgradeClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
             .fillMaxWidth()
-            .border(
-                1.dp,
-                if (isMaxShieldPro) GoldBorder else GlassBorderSubtle,
-                RoundedCornerShape(20.dp)
-            )
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(12.dp)
             .testTag("glass_security_metrics_widget")
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Metric 1: Shield Protection Level
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(if (isMaxShieldPro) GoldContainer else SoftSageContainer)
-                        .border(
-                            1.dp,
-                            if (isMaxShieldPro) GoldAccent else SoftSage.copy(alpha = 0.5f),
-                            CircleShape
-                        ),
+                        .size(34.dp)
+                        .background(EditorialSurfaceWhite)
+                        .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isMaxShieldPro) Icons.Default.VerifiedUser else Icons.Default.Shield,
-                        contentDescription = "Shield Active",
-                        tint = if (isMaxShieldPro) GoldAccentGlow else SoftSage,
+                        imageVector = if (isPro) Icons.Default.Shield else Icons.Default.Security,
+                        contentDescription = null,
+                        tint = if (isPro) EditorialAccentOrange else EditorialDeepBlack,
                         modifier = Modifier.size(18.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (isPro) "MAXSHIELD PRO" else "MAXSHIELD STANDARD",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialDeepBlack
+                        )
+                        if (isPro) {
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(5.dp)
+                                    .background(EditorialAccentOrange)
+                            )
+                        }
+                    }
                     Text(
-                        text = "Protection Tier",
-                        fontSize = 10.5.sp,
-                        color = TextMuted
-                    )
-                    Text(
-                        text = if (isMaxShieldPro) "MaxShield Pro 🛡️" else "MaxShield Free",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isMaxShieldPro) GoldAccentGlow else TextHighEmphasis
+                        text = "$threatScannedCount threats scanned • 24/7 Heuristic Node",
+                        fontSize = 11.sp,
+                        color = EditorialTextSecondary
                     )
                 }
             }
 
-            // Metric Divider
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(28.dp)
-                    .background(IndigoBorder)
-            )
-
-            // Metric 2: Monetized Action / Status
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier
-                    .weight(1.2f)
-                    .padding(start = 10.dp)
+            // Monetize Pro Button
+            Button(
+                onClick = onUpgradeClick,
+                shape = RoundedCornerShape(2.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isPro) EditorialDeepBlack else EditorialAccentOrange,
+                    contentColor = Color.White
+                ),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier.testTag("maxshield_upgrade_button")
             ) {
-                if (isMaxShieldPro) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(GoldContainer)
-                            .border(1.dp, GoldBorder, RoundedCornerShape(12.dp))
-                            .clickable(onClick = onUpgradeClick)
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(SafeGreen)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "PRO ACTIVE",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Black,
-                                color = GoldAccentGlow,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
-                    }
-                } else {
-                    Button(
-                        onClick = onUpgradeClick,
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(GoldAccent, HeroElectricBlue)
-                                )
-                            )
-                            .testTag("maxshield_upgrade_button")
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Bolt,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "MONETIZE PRO",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.Black
-                            )
-                        }
-                    }
-                }
+                Text(
+                    text = if (isPro) "PRO TIER" else "SUBSCRIPTION",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                )
             }
         }
     }
 }
 
+// =========================================================================
+// 5. MAIN SCANNER WORKSTATION
+// =========================================================================
 @Composable
-private fun GlassMessageInputCard(
+private fun EditorialScannerWorkstation(
     text: String,
+    activeMode: String,
+    onModeSelect: (String) -> Unit,
     onTextChange: (String) -> Unit,
     onClear: () -> Unit,
     onExampleClick: () -> Unit,
@@ -670,17 +728,20 @@ private fun GlassMessageInputCard(
     onAnalyze: () -> Unit,
     isLoading: Boolean
 ) {
-    var showPresetSelector by remember { androidx.compose.runtime.mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
+    var showPresetsDrawer by remember { mutableStateOf(false) }
 
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, GlassBorderSubtle, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(14.dp)
             .testTag("message_input_card")
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column {
+            // Laboratory Header & Mode Selector
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -689,67 +750,118 @@ private fun GlassMessageInputCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(SoftSageContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Radar,
-                            contentDescription = null,
-                            tint = SoftSage,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
+                            .size(7.dp)
+                            .background(EditorialAccentOrange)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "INBOX SCANNER",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp,
-                        color = SoftSage
+                        text = "CHECK A SUSPICIOUS MESSAGE",
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Black,
+                        color = EditorialDeepBlack,
+                        letterSpacing = 0.3.sp
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    // Quick next sample button
-                    OutlinedButton(
-                        onClick = onExampleClick,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .height(30.dp)
-                            .testTag("example_message_button"),
-                        contentPadding = PaddingValues(horizontal = 10.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, SoftSage.copy(alpha = 0.5f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = "Sample",
-                            tint = SoftSage,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Sample", fontSize = 11.sp, color = SoftSage, fontWeight = FontWeight.Bold)
-                    }
+                // Mode Selector: MESSAGE | CHECK URL | EMAIL
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ScannerModePill(
+                        label = "SMS",
+                        isActive = activeMode == "MESSAGE",
+                        onClick = { onModeSelect("MESSAGE") }
+                    )
+                    ScannerModePill(
+                        label = "URL",
+                        isActive = activeMode == "URL",
+                        onClick = { onModeSelect("URL") }
+                    )
+                    ScannerModePill(
+                        label = "EMAIL",
+                        isActive = activeMode == "EMAIL",
+                        onClick = { onModeSelect("EMAIL") }
+                    )
+                }
+            }
 
-                    // Browse presets dropdown/sheet toggle
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Text Input Field (Crisp rectangular surface with 1px border)
+            OutlinedTextField(
+                value = text,
+                onValueChange = onTextChange,
+                placeholder = {
+                    Text(
+                        text = when (activeMode) {
+                            "URL" -> "Paste suspicious link or URL here (e.g. http://usps-redelivery.xyz)..."
+                            "EMAIL" -> "Paste email headers, sender address, or message body..."
+                            else -> "Paste a suspicious message, SMS, email, or conversation here..."
+                        },
+                        fontSize = 13.sp,
+                        color = EditorialTextMuted,
+                        lineHeight = 18.sp
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(EditorialSurfaceWhite, RoundedCornerShape(2.dp))
+                    .testTag("message_input_field"),
+                shape = RoundedCornerShape(2.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EditorialAccentOrange,
+                    unfocusedBorderColor = EditorialBorder,
+                    focusedTextColor = EditorialDeepBlack,
+                    unfocusedTextColor = EditorialDeepBlack,
+                    cursorColor = EditorialAccentOrange
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 13.5.sp,
+                    lineHeight = 18.sp,
+                    color = EditorialDeepBlack
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Sub-bar: Presets button, Paste, Clear, Character count
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Presets toggle
                     OutlinedButton(
-                        onClick = { showPresetSelector = !showPresetSelector },
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .height(30.dp)
-                            .testTag("browse_presets_button"),
-                        contentPadding = PaddingValues(horizontal = 8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, IndigoBorderFocused)
+                        onClick = { showPresetsDrawer = !showPresetsDrawer },
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EditorialBorder),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.testTag("browse_presets_button")
                     ) {
                         Text(
-                            text = if (showPresetSelector) "Close" else "Presets",
-                            fontSize = 11.sp,
-                            color = TextMediumEmphasis,
-                            fontWeight = FontWeight.Medium
+                            text = if (showPresetsDrawer) "HIDE PRESETS" else "ATTACK PRESETS",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialTextSecondary
+                        )
+                    }
+
+                    // Random sample button
+                    OutlinedButton(
+                        onClick = onExampleClick,
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EditorialBorder),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.testTag("example_message_button")
+                    ) {
+                        Text(
+                            text = "RANDOM SAMPLE",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialTextSecondary
                         )
                     }
 
@@ -757,175 +869,121 @@ private fun GlassMessageInputCard(
                         IconButton(
                             onClick = onClear,
                             modifier = Modifier
-                                .size(30.dp)
+                                .size(28.dp)
+                                .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
                                 .testTag("clear_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear input",
-                                tint = TextMediumEmphasis,
-                                modifier = Modifier.size(16.dp)
+                                contentDescription = "Clear",
+                                tint = EditorialTextSecondary,
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
                 }
+
+                Text(
+                    text = "${text.length}/4000",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    color = EditorialTextMuted
+                )
             }
 
-            // Expandable Sample Presets Carousel / Grid
-            AnimatedVisibility(
-                visible = showPresetSelector,
-                enter = fadeIn() + slideInVertically()
-            ) {
+            // Presets Drawer
+            AnimatedVisibility(visible = showPresetsDrawer) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 4.dp)
+                        .padding(top = 8.dp)
+                        .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                        .background(EditorialSurfaceWhite)
+                        .padding(8.dp)
                 ) {
                     Text(
-                        text = "SELECT A REAL-WORLD THREAT TEMPLATE",
-                        fontSize = 10.sp,
+                        text = "SELECT THREAT VECTOR FOR DEMO EVALUATION:",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = TextMuted
+                        color = EditorialTextMuted
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         ScamShieldViewModel.SAMPLE_PRESETS.forEach { preset ->
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(IndigoSurfaceHover)
-                                    .border(1.dp, IndigoBorder, RoundedCornerShape(12.dp))
+                                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                                    .background(EditorialSurface)
                                     .clickable {
                                         onSelectPreset(preset)
-                                        showPresetSelector = false
+                                        showPresetsDrawer = false
                                     }
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = preset.title,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextHighEmphasis
-                                        )
-                                        Text(
-                                            text = preset.preview,
-                                            fontSize = 10.5.sp,
-                                            color = TextMediumEmphasis,
-                                            maxLines = 1
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(
-                                                if (preset.categoryBadge == "Safe Contact") SoftSageContainer
-                                                else Color(0xFF3B1E28)
-                                            )
-                                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                                    ) {
-                                        Text(
-                                            text = preset.categoryBadge,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = if (preset.categoryBadge == "Safe Contact") SoftSage else RiskHighRose
-                                        )
-                                    }
-                                }
+                                Text(
+                                    text = preset.title,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = EditorialDeepBlack
+                                )
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                placeholder = {
-                    Text(
-                        text = "Paste suspicious text, SMS, WhatsApp forward, or email here...",
-                        fontSize = 14.sp,
-                        color = TextMuted
-                    )
-                },
-                minLines = 3,
-                maxLines = 6,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = IndigoCanvasDark,
-                    unfocusedContainerColor = IndigoCanvasDark,
-                    focusedBorderColor = SoftSage,
-                    unfocusedBorderColor = IndigoBorder,
-                    focusedTextColor = TextHighEmphasis,
-                    unfocusedTextColor = TextHighEmphasis
-                ),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("message_input_field")
-            )
-
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Primary CTA: ANALYZE THREAT (Accent Orange)
+            Button(
+                onClick = onAnalyze,
+                enabled = !isLoading,
+                shape = RoundedCornerShape(2.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EditorialAccentOrange,
+                    contentColor = Color.White,
+                    disabledContainerColor = EditorialBorder
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(46.dp)
+                    .testTag("analyze_button")
             ) {
-                Text(
-                    text = "${text.length} / 4000",
-                    fontSize = 11.sp,
-                    color = TextMuted,
-                    fontWeight = FontWeight.Medium
-                )
-
-                // Human-centric Trustworthy Deep Indigo to Sage Gradient Button
-                Button(
-                    onClick = onAnalyze,
-                    enabled = text.isNotBlank() && !isLoading,
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        disabledContainerColor = IndigoSurfaceHover
-                    ),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            if (text.isNotBlank() && !isLoading) {
-                                Brush.horizontalGradient(
-                                    colors = listOf(HeroElectricBlue, HeroCyanGlow)
-                                )
-                            } else {
-                                Brush.horizontalGradient(
-                                    colors = listOf(IndigoSurfaceHover, IndigoSurfaceHover)
-                                )
-                            }
-                        )
-                        .testTag("analyze_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = if (text.isNotBlank() && !isLoading) Color.White else TextMuted,
-                        modifier = Modifier.size(16.dp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isLoading) "Scanning..." else "Analyze Threat",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = if (text.isNotBlank() && !isLoading) Color.White else TextMuted
+                        text = "SCANNING VECTORS...",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black
                     )
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "ANALYZE THREAT",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "→",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -933,1406 +991,873 @@ private fun GlassMessageInputCard(
 }
 
 @Composable
-private fun NeonLoadingCard() {
-    val infiniteTransition = rememberInfiniteTransition(label = "skeleton_shimmer")
-    val shimmerTranslate by infiniteTransition.animateFloat(
-        initialValue = -300f,
-        targetValue = 1200f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer_offset"
-    )
+private fun ScannerModePill(
+    label: String,
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(if (isActive) EditorialDeepBlack else EditorialSurfaceWhite)
+            .border(1.dp, if (isActive) EditorialDeepBlack else EditorialBorder, RoundedCornerShape(2.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = label,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.5.sp,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+            color = if (isActive) Color.White else EditorialTextSecondary
+        )
+    }
+}
 
-    // Stage pulse rotation for visual progress
-    val stagePulse by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
+// =========================================================================
+// 6. LOADING CARD
+// =========================================================================
+@Composable
+private fun EditorialLoadingCard() {
+    val transition = rememberInfiniteTransition(label = "scan_pulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.3f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+            animation = tween(700, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "stage_pulse"
+        label = "scan_alpha"
     )
 
-    val shimmerBrush = Brush.linearGradient(
-        colors = listOf(
-            GlassSkeletonBase,
-            GlassSkeletonHighlight,
-            GlassSkeletonBase
-        ),
-        start = Offset(shimmerTranslate - 250f, 0f),
-        end = Offset(shimmerTranslate + 250f, 250f)
-    )
-
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, GlassBorderLuminous, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialAccentOrange.copy(alpha = alpha), RoundedCornerShape(2.dp))
+            .padding(16.dp)
             .testTag("analysis_loading_skeleton_card")
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            // Live Visual Progress Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(SoftSageContainer)
-                            .border(1.dp, SoftSage.copy(alpha = stagePulse), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = SoftSage,
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.5.dp
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "AI Threat Analysis In Progress",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = TextHighEmphasis
-                        )
-                        Text(
-                            text = "Synthesizing Heuristic Rules & Gemini Zero-Trust Model",
-                            fontSize = 11.sp,
-                            color = SoftSage
-                        )
-                    }
-                }
-
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(SoftSageContainer)
-                        .border(1.dp, SoftSage.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "LIVE",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 1.sp,
-                        color = SoftSage
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Visual Progress Step Badges
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                LoadingStepPill(
-                    icon = Icons.Default.Dns,
-                    title = "URLs",
-                    isCurrent = true,
-                    alpha = stagePulse,
-                    modifier = Modifier.weight(1f)
+                        .size(8.dp)
+                        .background(EditorialAccentOrange)
                 )
-                LoadingStepPill(
-                    icon = Icons.Default.WarningAmber,
-                    title = "Urgency",
-                    isCurrent = true,
-                    alpha = stagePulse * 0.8f,
-                    modifier = Modifier.weight(1f)
-                )
-                LoadingStepPill(
-                    icon = Icons.Default.Fingerprint,
-                    title = "Vectors",
-                    isCurrent = false,
-                    alpha = 0.4f,
-                    modifier = Modifier.weight(1f)
-                )
-                LoadingStepPill(
-                    icon = Icons.Default.Shield,
-                    title = "Calibrate",
-                    isCurrent = false,
-                    alpha = 0.4f,
-                    modifier = Modifier.weight(1f)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "HEURISTIC SCAN IN PROGRESS // ZERO-DAY INSPECTOR",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = EditorialDeepBlack
                 )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Skeleton Placeholder 1: Threat Score Radial / Summary Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(54.dp)
-                        .clip(CircleShape)
-                        .background(shimmerBrush)
-                )
-                Spacer(modifier = Modifier.width(14.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .height(14.dp)
-                            .clip(RoundedCornerShape(7.dp))
-                            .background(shimmerBrush)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.95f)
-                            .height(10.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(shimmerBrush)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Skeleton Placeholder 2: Multi-line analysis narrative skeleton
+            // Animated scanning progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(shimmerBrush)
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Skeleton Placeholder 3: Two pill tags
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .height(3.dp)
+                    .background(EditorialBorder)
             ) {
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .height(28.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(shimmerBrush)
+                        .fillMaxWidth(alpha)
+                        .height(3.dp)
+                        .background(EditorialAccentOrange)
                 )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(28.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(shimmerBrush)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Parsing lexical syntax, checking URL reputation, verifying sender identity markers, and executing zero-trust heuristics...",
+                fontSize = 12.sp,
+                color = EditorialTextSecondary,
+                lineHeight = 16.sp
+            )
+        }
+    }
+}
+
+// =========================================================================
+// 7. ERROR CARD
+// =========================================================================
+@Composable
+private fun EditorialErrorCard(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(RiskCriticalRedBg)
+            .border(1.dp, RiskCriticalRedBorder, RoundedCornerShape(2.dp))
+            .padding(14.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    tint = RiskCriticalRed,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "EVALUATION ERROR",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = RiskCriticalRed
+                    )
+                    Text(
+                        text = message,
+                        fontSize = 12.sp,
+                        color = EditorialDeepBlack
+                    )
+                }
+            }
+
+            OutlinedButton(
+                onClick = onRetry,
+                shape = RoundedCornerShape(2.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, RiskCriticalRed),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "RETRY",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = RiskCriticalRed
                 )
             }
         }
     }
 }
 
+// =========================================================================
+// 8. AI RESULT ASSESSMENT (CORE OUTPUT UI)
+// =========================================================================
 @Composable
-private fun LoadingStepPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    isCurrent: Boolean,
-    alpha: Float,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isCurrent) IndigoSurfaceHover else GlassSurfaceUltra)
-            .border(
-                width = 1.dp,
-                color = if (isCurrent) SoftSage.copy(alpha = alpha) else IndigoBorder,
-                shape = RoundedCornerShape(10.dp)
-            )
-            .padding(vertical = 6.dp, horizontal = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (isCurrent) SoftSage else TextMuted,
-                modifier = Modifier.size(11.dp)
-            )
-            Spacer(modifier = Modifier.width(3.dp))
-            Text(
-                text = title,
-                fontSize = 9.5.sp,
-                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                color = if (isCurrent) TextHighEmphasis else TextMuted
-            )
-        }
-    }
-}
-
-@Composable
-private fun GlassErrorCard(message: String) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = RiskCriticalMagenta.copy(alpha = 0.15f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, RiskCriticalMagenta.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.ErrorOutline,
-                contentDescription = "Error",
-                tint = RiskCriticalMagenta,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = message,
-                fontSize = 13.sp,
-                color = TextHighEmphasis
-            )
-        }
-    }
-}
-
-/* =========================================================================
-   TAB 1: THREAT OVERVIEW (Matches Screenshot Layout 1 with Equalizer, Score,
-   Origin-Destination Pills, and Actions)
-   ========================================================================= */
-
-@Composable
-private fun ThreatOverviewSection(
+private fun EditorialResultAssessment(
     result: ScamAnalysisResult,
     onActionTaken: (String) -> Unit
 ) {
     val isFraud = result.isFraud
-    val riskColor = if (isFraud) FraudRed else SafeGreen
-    val riskContainer = if (isFraud) FraudRedContainer else SafeGreenContainer
-    val riskBorder = if (isFraud) FraudRedBorder else SafeGreenBorder
-    val statusTitle = if (isFraud) "FRAUD DETECTED" else "SAFE / VERIFIED"
-    val riskBadge = if (isFraud) "FRAUD • ${result.estimatedRiskScore}% RISK" else "SAFE • ${result.estimatedRiskScore}% RISK"
+    val riskScore = result.estimatedRiskScore
+    val riskColor = if (isFraud) RiskCriticalRed else RiskSafeGreen
+    val riskBg = if (isFraud) RiskCriticalRedBg else RiskSafeGreenBg
+    val riskBorder = if (isFraud) RiskCriticalRedBorder else RiskSafeGreenBorder
+    val verdictLabel = if (isFraud) "FRAUD DETECTED // HIGH CONFIDENCE" else "VERIFIED SAFE // NO THREAT SIGNALS"
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("analysis_result_card")
     ) {
-        // High-Contrast Red vs Green Verdict Banner
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = riskContainer),
+        // High-Visibility Binary Verdict Banner
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.5.dp, riskBorder, RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(2.dp))
+                .background(riskBg)
+                .border(1.5.dp, riskBorder, RoundedCornerShape(2.dp))
+                .padding(14.dp)
                 .testTag("fraud_verdict_banner")
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(riskColor.copy(alpha = 0.25f))
-                            .border(1.5.dp, riskColor, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (isFraud) Icons.Default.Warning else Icons.Default.CheckCircle,
-                            contentDescription = statusTitle,
-                            tint = riskColor,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = statusTitle,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 0.5.sp,
-                            color = riskColor
-                        )
-                        Text(
-                            text = if (isFraud) "Deceptive social engineering threat detected"
-                                   else "Clean message signals; no fraud indicators identified",
-                            fontSize = 11.sp,
-                            color = TextHighEmphasis
-                        )
-                    }
-                }
-
-                // Explicit Risk in Number or Percentage Box
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(riskColor)
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "${result.estimatedRiskScore}% Risk",
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
-        }
-
-        // Main Threat Card (Like the $12,847.92 Transaction card in screenshot)
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.2.dp, riskColor.copy(alpha = 0.6f), RoundedCornerShape(24.dp))
-                .testTag("analysis_result_card")
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(riskColor.copy(alpha = 0.2f))
-                                .border(1.dp, riskColor.copy(alpha = 0.6f), RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = if (isFraud) Icons.Default.Warning else Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = riskColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = if (isFraud) "FRAUD CLASSIFICATION" else "SAFETY CLASSIFICATION",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp,
-                                color = TextMediumEmphasis
-                            )
-                            Text(
-                                text = result.category,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Black,
-                                color = TextHighEmphasis
-                            )
-                        }
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(riskColor.copy(alpha = 0.2f))
-                            .border(1.dp, riskColor, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Text(
-                            text = riskBadge,
-                            color = riskColor,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp,
-                            letterSpacing = 0.8.sp,
-                            modifier = Modifier.testTag("risk_level_badge")
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Threat Equalizer wave in Red or Green
-                ThreatEqualizerBar(riskScore = result.estimatedRiskScore, riskColor = riskColor)
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Context Origin & Destination pills
-                DualNodePillSection(result = result)
-            }
-        }
-
-        // Risk Confidence Slider / Gauge Card (Red if fraud, Green if safe)
-        RiskConfidenceGaugeCard(
-            score = result.estimatedRiskScore,
-            isFraud = isFraud,
-            riskColor = riskColor
-        )
-
-        // Identified Red Flags Card
-        RedFlagsDetailCard(redFlags = result.redFlags, riskColor = riskColor)
-
-        // URL Analysis if present
-        if (result.detectedUrls.isNotEmpty()) {
-            ExtractedUrlsCard(urls = result.detectedUrls)
-        }
-
-        // AI Recommendations & Action Buttons (From screenshot: Freeze Card / Secure Device)
-        AiRecommendationsActionCard(
-            result = result,
-            onActionTaken = onActionTaken
-        )
-    }
-}
-
-@Composable
-private fun ThreatEqualizerBar(
-    riskScore: Int,
-    riskColor: Color
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(IndigoCanvasDark)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val barCount = 38
-            val spacing = size.width / barCount
-            val barWidth = spacing * 0.45f
-            val baseHeight = size.height
-
-            for (i in 0 until barCount) {
-                // Sine wave height modulation with risk intensity
-                val factor = (Math.sin(i * 0.4).toFloat() + 1f) * 0.5f
-                val activeIntensity = (riskScore / 100f)
-                val barHeight = (factor * baseHeight * 0.7f + 6.dp.toPx()) * (0.4f + activeIntensity * 0.6f)
-
-                val x = i * spacing + spacing / 2
-                val yTop = (baseHeight - barHeight) / 2
-                val yBottom = yTop + barHeight
-
-                val isHighTension = i > (barCount * (1f - activeIntensity))
-                val barColor = if (isHighTension) riskColor else HeroCyanGlow.copy(alpha = 0.5f)
-
-                drawLine(
-                    color = barColor,
-                    start = Offset(x, yTop),
-                    end = Offset(x, yBottom),
-                    strokeWidth = barWidth,
-                    cap = StrokeCap.Round
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DualNodePillSection(result: ScamAnalysisResult) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Node 1: Incoming Vector
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF081220))
-                .border(1.dp, Color(0x3338BDF8), RoundedCornerShape(16.dp))
-                .padding(12.dp)
-        ) {
-            Column {
-                Text(
-                    text = "SENDER VECTOR",
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMuted,
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    text = if (result.detectedUrls.isNotEmpty()) "Web Link / SMS" else "Direct Message",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextHighEmphasis
-                )
-                Text(
-                    text = "Unverified Origin",
-                    fontSize = 10.sp,
-                    color = RiskHighRose
-                )
-            }
-        }
-
-        // Center glowing particle connector
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(HeroHotPink.copy(alpha = 0.2f))
-                .border(1.dp, HeroHotPink.copy(alpha = 0.7f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(HeroCyanGlow)
-            )
-        }
-
-        // Node 2: Target Impact
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(IndigoSurface)
-                .border(1.dp, IndigoBorder, RoundedCornerShape(16.dp))
-                .padding(12.dp)
-        ) {
-            Column {
-                Text(
-                    text = "INTENDED TARGET",
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMuted,
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    text = "Credentials / OTP",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextHighEmphasis
-                )
-                Text(
-                    text = "High Exposure Risk",
-                    fontSize = 10.sp,
-                    color = HeroCyanGlow
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RiskConfidenceGaugeCard(
-    score: Int,
-    isFraud: Boolean,
-    riskColor: Color
-) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(20.dp))
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Threat Risk Percentage",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextHighEmphasis
-                    )
-                    Text(
-                        text = "$score out of 100 Risk Score",
-                        fontSize = 11.sp,
-                        color = TextMuted
-                    )
-                }
-
-                Text(
-                    text = "$score%",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Black,
-                    color = riskColor,
-                    modifier = Modifier.testTag("risk_score_value")
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Glowing Slider Track inspired by the screenshot's slider knob
-            val animatedScore by animateFloatAsState(
-                targetValue = score / 100f,
-                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
-                label = "score_anim"
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                // Background Track
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(IndigoCanvasDark)
-                )
-
-                // Fill Track with Gradient (Safe green or fraud red)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedScore)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = if (isFraud) listOf(HeroCyanGlow, FraudRed)
-                                         else listOf(SafeGreen, SafeGreen)
-                            )
-                        )
-                )
-
-                // Glowing Thumb Knob
-                Box(
-                    modifier = Modifier
-                        .padding(start = (280.dp * animatedScore).coerceAtLeast(0.dp))
-                        .size(18.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .border(3.dp, riskColor, CircleShape)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("0% (Clean)", fontSize = 10.sp, color = SafeGreen)
-                Text("50% (Threshold)", fontSize = 10.sp, color = TextMuted)
-                Text("100% (Critical)", fontSize = 10.sp, color = FraudRed)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Status Verdict banner below gauge
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isFraud) FraudRedContainer else SafeGreenContainer)
-                    .border(
-                        1.dp,
-                        if (isFraud) FraudRedBorder else SafeGreenBorder,
-                        RoundedCornerShape(12.dp)
-                    )
-                    .padding(10.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = if (isFraud) Icons.Default.Warning else Icons.Default.CheckCircle,
                         contentDescription = null,
                         tint = riskColor,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(22.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (isFraud) "FRAUD DETECTED: Deceptive intent and high-risk indicators confirmed ($score%)."
-                               else "SAFE / NO FRAUD: Clean message pattern verified ($score% minimal risk).",
-                        fontSize = 11.5.sp,
-                        color = riskColor,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RedFlagsDetailCard(
-    redFlags: List<String>,
-    riskColor: Color
-) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(20.dp))
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Shield,
-                    contentDescription = null,
-                    tint = HeroCyanGlow,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "IDENTIFIED RED FLAGS",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = HeroCyanGlow
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                redFlags.forEach { flag ->
-                    Row(
-                        verticalAlignment = Alignment.Top,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 4.dp, end = 10.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(riskColor)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = verdictLabel,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Black,
+                            color = riskColor,
+                            letterSpacing = 0.5.sp
                         )
                         Text(
-                            text = flag,
-                            fontSize = 13.sp,
-                            color = TextHighEmphasis,
-                            lineHeight = 18.sp
+                            text = if (isFraud) "Immediate caution advised: Do not interact or reply" else "Message passed zero-trust heuristic verification",
+                            fontSize = 11.5.sp,
+                            color = EditorialDeepBlack
                         )
                     }
                 }
+
+                Text(
+                    text = "$riskScore%",
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    color = riskColor
+                )
             }
         }
-    }
-}
 
-@Composable
-private fun ExtractedUrlsCard(urls: List<UrlAnalysis>) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(20.dp))
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = "EXTRACTED LINK INSPECTOR",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-                color = HeroCyanGlow
-            )
-            Spacer(modifier = Modifier.height(10.dp))
+        // Modular Grid Assessment Box
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(2.dp))
+                .background(EditorialSurface)
+                .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                .padding(16.dp)
+        ) {
+            Column {
+                // Header row: Threat Category & Risk Level Badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "THREAT ASSESSMENT",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialTextMuted,
+                            letterSpacing = 0.8.sp
+                        )
+                        Text(
+                            text = result.category,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            color = EditorialDeepBlack
+                        )
+                    }
 
-            urls.forEach { item ->
-                val badgeColor = if (item.suspicious) RiskHighRose else RiskLowGreen
+                    // Risk Level Badge
+                    Box(
+                        modifier = Modifier
+                            .background(riskColor)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .testTag("risk_level_badge")
+                    ) {
+                        Text(
+                            text = "${result.riskLevel.name} RISK",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Score Gauge & Equalizer Section
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                        .background(EditorialSurfaceWhite)
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "$riskScore%",
+                            fontSize = 38.sp,
+                            fontWeight = FontWeight.Black,
+                            lineHeight = 38.sp,
+                            color = riskColor,
+                            modifier = Modifier.testTag("risk_score_value")
+                        )
+                        Text(
+                            text = "ESTIMATED RISK SCORE",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EditorialTextMuted
+                        )
+                    }
+
+                    // Equalizer Waveform Bars
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.height(34.dp)
+                    ) {
+                        val heights = listOf(0.4f, 0.7f, 0.9f, 0.6f, 0.8f, 0.5f, 0.85f, 0.3f)
+                        heights.forEachIndexed { i, factor ->
+                            val barHeight = (34 * factor * (riskScore.coerceAtLeast(15) / 100f)).coerceAtLeast(4f).dp
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .height(barHeight)
+                                    .background(if (i % 2 == 0) riskColor else riskColor.copy(alpha = 0.6f))
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Summary text
+                Text(
+                    text = result.summary,
+                    fontSize = 13.sp,
+                    color = EditorialTextPrimary,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // RED FLAGS Section (Structured numbered list)
+                if (result.redFlags.isNotEmpty()) {
+                    Text(
+                        text = "RED FLAGS DETECTED",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Black,
+                        color = EditorialDeepBlack,
+                        letterSpacing = 0.8.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                            .background(EditorialSurfaceWhite)
+                    ) {
+                        result.redFlags.forEachIndexed { idx, flag ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = String.format("%02d", idx + 1),
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = EditorialAccentOrange
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = flag,
+                                    fontSize = 12.5.sp,
+                                    color = EditorialDeepBlack,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                            if (idx < result.redFlags.size - 1) {
+                                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+
+                // RECOMMENDED ACTION
+                Text(
+                    text = "RECOMMENDED ACTION",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Black,
+                    color = EditorialDeepBlack,
+                    letterSpacing = 0.8.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF081220))
-                        .border(1.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(if (isFraud) EditorialOrangeBg else RiskSafeGreenBg)
+                        .border(1.dp, if (isFraud) EditorialOrangeBorder else RiskSafeGreenBorder, RoundedCornerShape(2.dp))
                         .padding(12.dp)
                 ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Link,
-                                contentDescription = null,
-                                tint = badgeColor,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = item.url,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextHighEmphasis
-                            )
+                    Text(
+                        text = result.recommendedAction,
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = EditorialDeepBlack,
+                        lineHeight = 17.sp
+                    )
+                }
+
+                // Detected URLs section (if present)
+                if (result.detectedUrls.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = "DETECTED URLS & DOMAINS",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Black,
+                        color = EditorialDeepBlack,
+                        letterSpacing = 0.8.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                            .background(EditorialSurfaceWhite)
+                    ) {
+                        result.detectedUrls.forEachIndexed { index, urlItem ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = urlItem.url,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = EditorialDeepBlack,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = urlItem.reason,
+                                        fontSize = 11.sp,
+                                        color = EditorialTextSecondary
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .background(if (urlItem.suspicious) RiskCriticalRed else RiskSafeGreen)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = if (urlItem.suspicious) "SUSPICIOUS" else "SAFE",
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                            if (index < result.detectedUrls.size - 1) {
+                                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                            }
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = item.reason,
-                            fontSize = 11.sp,
-                            color = TextMediumEmphasis
-                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(6.dp))
+
+                // Heuristic Signals tags
+                if (result.heuristicSignals.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = "HEURISTIC SIGNALS",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = EditorialTextMuted
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        result.heuristicSignals.forEach { sig ->
+                            Box(
+                                modifier = Modifier
+                                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                                    .background(EditorialSurfaceWhite)
+                                    .padding(horizontal = 7.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = sig,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 10.sp,
+                                    color = EditorialTextSecondary
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
+// =========================================================================
+// 9. ATTACK VECTOR GRAPH SECTION
+// =========================================================================
 @Composable
-private fun AiRecommendationsActionCard(
-    result: ScamAnalysisResult,
-    onActionTaken: (String) -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+private fun EditorialGraphSection(result: ScamAnalysisResult) {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, IndigoBorder, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(16.dp)
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(IndigoSurfaceHover),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = HeroCyanGlow,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
+                        .size(7.dp)
+                        .background(EditorialAccentOrange)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "AI Recommendations",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextHighEmphasis
+                    text = "ATTACK VECTOR CORRELATION GRAPH",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Black,
+                    color = EditorialDeepBlack,
+                    letterSpacing = 0.8.sp
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = result.recommendedAction,
-                fontSize = 13.sp,
-                color = TextHighEmphasis,
-                lineHeight = 19.sp
+                text = "Node-to-node signal analysis identifying threat surface propagation:",
+                fontSize = 12.5.sp,
+                color = EditorialTextSecondary
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Dual Action Buttons exactly matching the screenshot pill buttons:
-            // "Freeze Card" (cyan-blue pill) and "Secure Device" (dark pill)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            // Graph visualization nodes
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                    .background(EditorialSurfaceWhite)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
-                    onClick = { onActionTaken("Block Sender & Quarantine") },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = HeroElectricBlue,
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AcUnit,
-                        contentDescription = null,
-                        tint = HeroCyanGlow,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Quarantine Link",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Button(
-                    onClick = { onActionTaken("Mark Safe / Report") },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = IndigoSurfaceHover,
-                        contentColor = TextHighEmphasis
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .border(1.dp, IndigoBorder, RoundedCornerShape(20.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = TextMediumEmphasis,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Secure Device",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                EditorialGraphNode(
+                    nodeId = "NODE_01",
+                    title = "Sender Authentication Vector",
+                    score = if (result.isFraud) "HIGH RISK (94%)" else "VERIFIED (5%)",
+                    isWarning = result.isFraud
+                )
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                EditorialGraphNode(
+                    nodeId = "NODE_02",
+                    title = "Linguistic Urgency & Coercion Hook",
+                    score = if (result.redFlags.isNotEmpty()) "DETECTED" else "BENIGN",
+                    isWarning = result.redFlags.isNotEmpty()
+                )
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                EditorialGraphNode(
+                    nodeId = "NODE_03",
+                    title = "URL Infrastructure Reputation",
+                    score = if (result.detectedUrls.any { it.suspicious }) "UNSECURED / SPOOF" else "NO SUSPICIOUS URLS",
+                    isWarning = result.detectedUrls.any { it.suspicious }
+                )
             }
         }
     }
 }
 
-/* =========================================================================
-   TAB 2: THREAT GRAPH (Matches Screenshot Layout 2 with Node Network Graph)
-   ========================================================================= */
-
 @Composable
-private fun ThreatGraphSection(result: ScamAnalysisResult) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+private fun EditorialGraphNode(
+    nodeId: String,
+    title: String,
+    score: String,
+    isWarning: Boolean
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = nodeId,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 9.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = EditorialAccentOrange
+            )
+            Text(
+                text = title,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = EditorialDeepBlack
+            )
+        }
+        Text(
+            text = score,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 10.5.sp,
+            fontWeight = FontWeight.Black,
+            color = if (isWarning) RiskCriticalRed else RiskSafeGreen
+        )
+    }
+}
+
+// =========================================================================
+// 10. TIMELINE SECTION
+// =========================================================================
+@Composable
+private fun EditorialTimelineSection(result: ScamAnalysisResult) {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "THREAT ATTACK GRAPH",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = HeroCyanGlow
-                )
-                Text(
-                    text = "5 Nodes Linked",
-                    fontSize = 11.sp,
-                    color = TextMuted
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Visual Node Graph matching screenshot screen 2
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(IndigoCanvasDark)
-                    .border(1.dp, IndigoBorder, RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Background Neural Dots
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    // Center node to outer nodes glowing curved connection lines
-                    val center = Offset(size.width / 2, size.height / 2)
-                    val p1 = Offset(size.width * 0.22f, size.height * 0.22f)
-                    val p2 = Offset(size.width * 0.78f, size.height * 0.25f)
-                    val p3 = Offset(size.width * 0.15f, size.height * 0.75f)
-                    val p4 = Offset(size.width * 0.75f, size.height * 0.82f)
-
-                    listOf(p1, p2, p3, p4).forEach { pt ->
-                        drawLine(
-                            color = HeroHotPink.copy(alpha = 0.5f),
-                            start = center,
-                            end = pt,
-                            strokeWidth = 2.dp.toPx()
-                        )
-                    }
-                }
-
-                // Node 1: Top Left Vector
-                GraphNodeBadge(
-                    text = "Spoofed SMS",
-                    icon = Icons.Default.Radar,
-                    isHighRisk = true,
-                    modifier = Modifier.align(Alignment.TopStart).padding(start = 20.dp, top = 25.dp)
-                )
-
-                // Node 2: Top Right Vector
-                GraphNodeBadge(
-                    text = "Malicious URL",
-                    icon = Icons.Default.Link,
-                    isHighRisk = true,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(end = 20.dp, top = 30.dp)
-                )
-
-                // Central Node: Impersonation Target (like Noah Hayes card in screenshot)
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(130.dp, 100.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(Color(0x66FF007A), Color(0xFF132035))
-                            )
-                        )
-                        .border(1.5.dp, HeroHotPink, RoundedCornerShape(18.dp))
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = result.category.take(16),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextHighEmphasis,
-                            textAlign = TextAlign.Center
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 4.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(RiskCriticalMagenta.copy(alpha = 0.3f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text("High Risk Node", fontSize = 8.sp, color = RiskCriticalMagenta, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-
-                // Node 3: Bottom Left Vector
-                GraphNodeBadge(
-                    text = "Credential Hook",
-                    icon = Icons.Default.Lock,
-                    isHighRisk = false,
-                    modifier = Modifier.align(Alignment.BottomStart).padding(start = 24.dp, bottom = 25.dp)
+                        .size(7.dp)
+                        .background(EditorialAccentOrange)
                 )
-
-                // Node 4: Bottom Right Vector
-                GraphNodeBadge(
-                    text = "Target Device",
-                    icon = Icons.Default.Shield,
-                    isHighRisk = false,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 20.dp)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "KILL-CHAIN ATTACK TIMELINE",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Black,
+                    color = EditorialDeepBlack,
+                    letterSpacing = 0.8.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Status chip like "5 Failed Login Attempts • 2m ago" in screenshot
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF111E32))
-                    .border(1.dp, Color(0x3338BDF8), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                    .background(EditorialSurfaceWhite)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(HeroHotPink)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Active correlation: ${result.redFlags.size} indicators detected across attack vector",
-                        fontSize = 12.sp,
-                        color = TextHighEmphasis,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                TimelineStepRow(
+                    step = "01",
+                    title = "Initial Inbound Vector",
+                    desc = "SMS or email delivered bypasses default telco filters"
+                )
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                TimelineStepRow(
+                    step = "02",
+                    title = "Psychological Trigger",
+                    desc = "Fabricated urgency or account panic induces victim compliance"
+                )
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(EditorialBorder))
+                TimelineStepRow(
+                    step = "03",
+                    title = "Harvest / Coercion",
+                    desc = "Victim prompted to enter OTP, bank login, or cryptocurrency transfer"
+                )
             }
         }
     }
 }
 
 @Composable
-private fun GraphNodeBadge(
-    text: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    isHighRisk: Boolean,
-    modifier: Modifier = Modifier
+private fun TimelineStepRow(
+    step: String,
+    title: String,
+    desc: String
 ) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0F233E))
-            .border(1.dp, if (isHighRisk) HeroHotPink else HeroCyanGlow, RoundedCornerShape(12.dp))
-            .padding(8.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (isHighRisk) HeroHotPink else HeroCyanGlow,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(text = text, fontSize = 10.sp, color = TextHighEmphasis, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-/* =========================================================================
-   TAB 3: THREAT TIMELINE (Step-by-step Attack Progression breakdown)
-   ========================================================================= */
-
-@Composable
-private fun ThreatTimelineSection(result: ScamAnalysisResult) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(24.dp))
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Text(
+            text = step,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = EditorialAccentOrange
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column {
             Text(
-                text = "ATTACK PROGRESSION TIMELINE",
-                fontSize = 11.sp,
+                text = title,
+                fontSize = 12.5.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-                color = HeroCyanGlow
+                color = EditorialDeepBlack
             )
-            Spacer(modifier = Modifier.height(14.dp))
-
-            val timelineSteps = listOf(
-                Pair("Phase 1: Initial Hook", "Attacker crafts urgent premise (account freeze / delivery failure / prize)."),
-                Pair("Phase 2: Artificial Urgency", "Pressure applied to bypass user critical thinking within minutes."),
-                Pair("Phase 3: Redirection / Phishing Link", "Victim prompted to open external unverified URL or dial fake helpline."),
-                Pair("Phase 4: Credential Exploitation", "Demands for OTP, PIN, password, or direct financial authorization.")
+            Text(
+                text = desc,
+                fontSize = 11.sp,
+                color = EditorialTextSecondary,
+                lineHeight = 15.sp
             )
-
-            timelineSteps.forEachIndexed { index, step ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(HeroElectricBlue)
-                                .border(1.dp, HeroCyanGlow, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "${index + 1}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                        if (index < timelineSteps.size - 1) {
-                            Box(
-                                modifier = Modifier
-                                    .width(2.dp)
-                                    .height(36.dp)
-                                    .background(Color(0x3338BDF8))
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Column {
-                        Text(
-                            text = step.first,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextHighEmphasis
-                        )
-                        Text(
-                            text = step.second,
-                            fontSize = 12.sp,
-                            color = TextMediumEmphasis,
-                            lineHeight = 17.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-            }
         }
     }
 }
 
-/* =========================================================================
-   BOTTOM NAVIGATION BAR (Matching screenshot floating pill bar: Home / Alerts / Insights / Profile)
-   ========================================================================= */
-
+// =========================================================================
+// 11. EDITORIAL BOTTOM BAR
+// =========================================================================
 @Composable
-private fun InboxHeroBottomBar(
+private fun EditorialBottomBar(
     selectedIndex: Int,
     onSelect: (Int) -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder)
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp))
-                .background(Color(0xE6121528))
-                .border(1.dp, IndigoBorder, RoundedCornerShape(30.dp))
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BottomNavItem(
-                    label = "Home",
-                    icon = Icons.Default.Home,
-                    isSelected = selectedIndex == 0,
-                    onClick = { onSelect(0) }
-                )
-                BottomNavItem(
-                    label = "Alerts",
-                    icon = Icons.Default.Radar,
-                    isSelected = selectedIndex == 1,
-                    onClick = { onSelect(1) }
-                )
-                BottomNavItem(
-                    label = "Samples",
-                    icon = Icons.Default.PieChart,
-                    isSelected = selectedIndex == 2,
-                    onClick = { onSelect(2) }
-                )
-                BottomNavItem(
-                    label = "Profile",
-                    icon = Icons.Default.Person,
-                    isSelected = selectedIndex == 3,
-                    onClick = { onSelect(3) }
-                )
-            }
+            BottomNavItem(
+                icon = Icons.Default.Shield,
+                label = "SCANNER",
+                isSelected = selectedIndex == 0,
+                onClick = { onSelect(0) }
+            )
+            BottomNavItem(
+                icon = Icons.Default.History,
+                label = "HISTORY",
+                isSelected = selectedIndex == 1,
+                onClick = { onSelect(1) }
+            )
+            BottomNavItem(
+                icon = Icons.Default.Lightbulb,
+                label = "SAMPLES",
+                isSelected = selectedIndex == 2,
+                onClick = { onSelect(2) }
+            )
+            BottomNavItem(
+                icon = Icons.Default.Bolt,
+                label = "PRO SHIELD",
+                isSelected = selectedIndex == 3,
+                onClick = { onSelect(3) }
+            )
         }
     }
 }
 
 @Composable
 private fun BottomNavItem(
+    icon: ImageVector,
     label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val animatedColor by animateColorAsState(
-        targetValue = if (isSelected) HeroCyanGlow else TextMuted,
-        label = "nav_item_color"
-    )
+    val activeColor = EditorialAccentOrange
+    val inactiveColor = EditorialTextSecondary
 
-    Box(
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (isSelected) IndigoSurfaceHover else Color.Transparent)
+            .clip(RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = animatedColor,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = label,
-                fontSize = 10.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = animatedColor
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (isSelected) activeColor else inactiveColor,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.sp,
+            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium,
+            color = if (isSelected) activeColor else inactiveColor
+        )
     }
 }
 
+// =========================================================================
+// 12. BACKGROUND GRID & FOOTER
+// =========================================================================
 @Composable
-private fun CyberGridBackground(modifier: Modifier = Modifier) {
+private fun EditorialGridBackground(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
-        val step = 32.dp.toPx()
-        val cols = (size.width / step).toInt() + 1
-        val rows = (size.height / step).toInt() + 1
+        val step = 48.dp.toPx()
+        val lineColor = EditorialBorder.copy(alpha = 0.55f)
 
-        for (i in 0..cols) {
-            for (j in 0..rows) {
-                drawCircle(
-                    color = GridDotColor,
-                    radius = 1.2.dp.toPx(),
-                    center = Offset(i * step, j * step)
-                )
-            }
+        var x = 0f
+        while (x < size.width) {
+            drawLine(
+                color = lineColor,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = 1f
+            )
+            x += step
+        }
+
+        var y = 0f
+        while (y < size.height) {
+            drawLine(
+                color = lineColor,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = 1f
+            )
+            y += step
         }
     }
 }
 
 @Composable
-private fun HeroPrivacyDisclaimer() {
+private fun EditorialFooter() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+            .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 4.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                tint = HeroCyanGlow,
-                modifier = Modifier.size(13.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "Inbox Hero Zero-Trust Engine: No messages stored.",
-                fontSize = 11.sp,
-                color = TextMediumEmphasis,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
         Text(
-            text = "Automated threat telemetry & contextual reasoning. When in doubt, verify with your provider directly.",
-            fontSize = 10.sp,
-            color = TextMuted,
-            textAlign = TextAlign.Center,
-            lineHeight = 14.sp
+            text = "SCAMSHIELD // CYBERSECURITY LAB WORKSTATION",
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = EditorialTextMuted,
+            letterSpacing = 1.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Zero-knowledge encryption • Gemini neural classification • Client-side heuristics",
+            fontSize = 10.5.sp,
+            color = EditorialTextMuted,
+            textAlign = TextAlign.Center
         )
     }
 }

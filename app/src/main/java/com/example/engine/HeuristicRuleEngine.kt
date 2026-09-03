@@ -38,6 +38,14 @@ object HeuristicRuleEngine {
         Pattern.compile("(?i)\\b(unpaid parcel|delivery failed|customs fee|redelivery)\\b")
     )
 
+    private val GOVERNMENT_IMPERSONATION_PATTERNS = listOf(
+        Pattern.compile("(?i)\\b(irs|internal revenue service|tax authority|unpaid tax|social security|arrest warrant|court subpoena|police warrant)\\b")
+    )
+
+    private val UNUSUAL_PAYMENT_PATTERNS = listOf(
+        Pattern.compile("(?i)\\b(gift card|gift cards|itunes card|google play card|steam card|crypto|bitcoin|wire transfer|zelle transfer|western union)\\b")
+    )
+
     fun extractUrls(text: String): List<String> {
         val urls = mutableListOf<String>()
         val matcher = URL_REGEX.matcher(text)
@@ -184,6 +192,34 @@ object HeuristicRuleEngine {
                         triggerName = "Suspicious Action / Remote Tool Demands",
                         description = "Requests to verify identity, pay delivery fees, or download remote tools.",
                         severityPoints = 25
+                    )
+                )
+                break
+            }
+        }
+
+        // Check Government & Institutional Impersonation
+        for (pattern in GOVERNMENT_IMPERSONATION_PATTERNS) {
+            if (pattern.matcher(message).find()) {
+                detections.add(
+                    HeuristicDetection(
+                        triggerName = "Government / Authority Impersonation",
+                        description = "Impersonation of tax agencies, law enforcement, or official bodies.",
+                        severityPoints = 30
+                    )
+                )
+                break
+            }
+        }
+
+        // Check Unusual Payment Methods (Gift Cards, Crypto, etc.)
+        for (pattern in UNUSUAL_PAYMENT_PATTERNS) {
+            if (pattern.matcher(message).find()) {
+                detections.add(
+                    HeuristicDetection(
+                        triggerName = "Untraceable / Coerced Payment Demand",
+                        description = "Demand for gift cards, cryptocurrency, or wire transfers to resolve urgent issues.",
+                        severityPoints = 35
                     )
                 )
                 break

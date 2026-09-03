@@ -3,81 +3,106 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // =========================================================================
-// Human-Centric Trustworthy Palette (Deep Indigo, Soft Sage & Frosted Glass)
+// ScamShield Editorial / Cyber Lab Design Tokens
 // =========================================================================
 
-// Deep Indigo Canvas & Surfaces
-val IndigoCanvasDark = Color(0xFF0C0E1A)        // Deep Midnight Indigo base
-val IndigoCanvasRadial = Color(0xFF16192E)      // Subtle elevated indigo ambient
-val IndigoSurface = Color(0xFF15182C)           // Trustworthy deep indigo glass card
-val IndigoSurfaceHover = Color(0xFF1F243E)      // Elevated hover / secondary pill
-val IndigoBorder = Color(0x337986CB)            // Delicate translucent indigo border
-val IndigoBorderFocused = Color(0x669FA8DA)
+// Background & Surfaces
+val EditorialBackground = Color(0xFFE4E4E4)       // Warm neutral light gray
+val EditorialSurface = Color(0xFFF6F6F6)          // Pure surface for cards, sections, inputs
+val EditorialSurfaceMuted = Color(0xFFECECEC)     // Subtle secondary gray
+val EditorialSurfaceWhite = Color(0xFFFFFFFF)     // Clean white surface
+val EditorialBorder = Color(0xFFD7D7D7)           // 1px modular grid border
+val EditorialBorderDark = Color(0xFFBEBEBE)       // High contrast grid border
 
-// Frosted Glass Layering & Shimmer Colors
-val GlassSurfaceUltra = Color(0x331C2242)       // Ultra translucent frosted glass background
-val GlassSurfaceElevated = Color(0x4D222A52)    // Floating frosted glass card layer
-val GlassBorderLuminous = Color(0x448EBAA3)     // Soft sage luminous border for glass cards
-val GlassBorderSubtle = Color(0x2E818CF8)       // Indigo crystalline border
-val GlassShimmerStart = Color(0x00FFFFFF)       // Shimmer scan gradient start
-val GlassShimmerHighlight = Color(0x24FFFFFF)   // Shimmer scan gradient peak
-val GlassSkeletonBase = Color(0xFF191F38)       // Skeleton item placeholder base
-val GlassSkeletonHighlight = Color(0xFF28325A)  // Skeleton item shimmer highlight
+// Typography Tokens
+val EditorialTextPrimary = Color(0xFF1B1B1B)      // Near-black for major text & titles
+val EditorialDeepBlack = Color(0xFF0E0E0E)        // Deep black for heavy typography & accents
+val EditorialTextSecondary = Color(0xFF4A4A4A)    // Secondary readable gray
+val EditorialTextMuted = Color(0xFF767676)        // Technical labels & timestamps
 
-// Soft Sage Accents (Calm, Human, Grounded)
-val SoftSage = Color(0xFF8EBAA3)                // Natural, calming soft sage green
-val SoftSageLight = Color(0xFFAFD1C0)           // Light sage accent
-val SoftSageContainer = Color(0xFF1C2C24)       // Soft sage muted container
-val SoftSageOnContainer = Color(0xFFC7E2D5)     // Sage readable text
+// Accent Orange Tokens (Primary brand accent)
+val EditorialAccentOrange = Color(0xFFEC783B)     // Vibrant safety orange
+val EditorialOrangeHover = Color(0xFFD9662B)      // Pressed/focused orange
+val EditorialOrangeBg = Color(0xFFFDEEE6)         // Subtle orange tinted surface
+val EditorialOrangeBorder = Color(0xFFF6AB83)     // Border for orange accents
 
-// Trustworthy Indigo Brand Tones
-val DeepIndigoPrimary = Color(0xFF4F46E5)       // Rich trustworthy Indigo
-val DeepIndigoAccent = Color(0xFF6366F1)        // Bright Indigo accent
-val IndigoSubtle = Color(0xFF3730A3)            // Deep slate indigo
+// Risk States in Editorial Context
+val RiskCriticalRed = Color(0xFFD32F2F)           // Genuine critical/high-risk state
+val RiskCriticalRedBg = Color(0xFFFDEAEA)
+val RiskCriticalRedBorder = Color(0xFFF5AAAA)
 
-// Human Alert & Severity Tones (Warm Earth / Terracotta / Rose rather than harsh neon)
-val RiskCriticalCrimson = Color(0xFFD64545)     // Trustworthy deep crimson
-val RiskHighTerracotta = Color(0xFFDE6B48)      // Warm terracotta / persimmon
-val RiskMediumOchre = Color(0xFFDDA15E)         // Warm earth ochre / amber
-val RiskLowSage = Color(0xFF8EBAA3)             // Soft Sage for low risk & safe states
+val RiskWarningOrange = EditorialAccentOrange     // Medium warning
+val RiskWarningOrangeBg = EditorialOrangeBg
+val RiskWarningOrangeBorder = EditorialOrangeBorder
 
-// Vivid Binary Alert Tones: RED for Fraud, GREEN for Safe
-val FraudRed = Color(0xFFEF4444)                // Clear, unmistakable Vivid Red for Fraud
-val FraudRedDark = Color(0xFFDC2626)
-val FraudRedContainer = Color(0x2EEF4444)
-val FraudRedBorder = Color(0x80EF4444)
+val RiskSafeGreen = Color(0xFF1B8A44)             // Low risk / safe state
+val RiskSafeGreenBg = Color(0xFFE9F5ED)
+val RiskSafeGreenBorder = Color(0xFFA5D8B4)
 
-val SafeGreen = Color(0xFF22C55E)               // Clear, unmistakable Vivid Green for Safe / No Fraud
-val SafeGreenDark = Color(0xFF16A34A)
-val SafeGreenContainer = Color(0x2E22C55E)
-val SafeGreenBorder = Color(0x8022C55E)
+// Legacy Aliases mapped to Editorial Design Tokens (Ensures 100% backward compatibility)
+val IndigoCanvasDark = EditorialBackground
+val IndigoCanvasRadial = EditorialBackground
+val IndigoSurface = EditorialSurface
+val IndigoSurfaceHover = EditorialSurfaceMuted
+val IndigoBorder = EditorialBorder
+val IndigoBorderFocused = EditorialBorderDark
 
-// MaxShield Pro Monetization Gold & Premium Tones
-val GoldAccent = Color(0xFFF59E0B)
-val GoldAccentGlow = Color(0xFFFBBF24)
-val GoldContainer = Color(0x26F59E0B)
-val GoldBorder = Color(0x66F59E0B)
+val GlassSurfaceUltra = EditorialSurface
+val GlassSurfaceElevated = EditorialSurface
+val GlassBorderLuminous = EditorialBorder
+val GlassBorderSubtle = EditorialBorder
+val GlassShimmerStart = Color(0x00FFFFFF)
+val GlassShimmerHighlight = Color(0x33EC783B)
+val GlassSkeletonBase = EditorialSurfaceMuted
+val GlassSkeletonHighlight = EditorialSurface
 
-// Typography & Contrast Tones
-val TextHighEmphasis = Color(0xFFF8F9FD)        // Warm off-white
-val TextMediumEmphasis = Color(0xFFA3A8C5)      // Slate indigo secondary
-val TextMuted = Color(0xFF707694)               // Subdued indigo slate
-val GridDotColor = Color(0x1F818CF8)            // Delicate indigo dot mesh
+val SoftSage = RiskSafeGreen
+val SoftSageLight = Color(0xFF2E9E58)
+val SoftSageContainer = RiskSafeGreenBg
+val SoftSageOnContainer = EditorialTextPrimary
 
-// Legacy & UI Element Aliases (Seamlessly mapping to Deep Indigo & Soft Sage)
-val HeroCanvasDark = IndigoCanvasDark
-val HeroCanvasRadial = IndigoCanvasRadial
-val HeroCardGlass = IndigoSurface
-val HeroCardGlassBorder = IndigoBorder
-val HeroCardGlassHover = IndigoSurfaceHover
+val DeepIndigoPrimary = EditorialAccentOrange
+val DeepIndigoAccent = EditorialAccentOrange
+val IndigoSubtle = EditorialSurfaceMuted
 
-val HeroCyanGlow = SoftSage                     // Calming soft sage accent!
-val HeroElectricBlue = DeepIndigoPrimary        // Deep trustworthy indigo!
-val HeroEmerald = SoftSage                      // Soft sage
-val HeroHotPink = RiskHighTerracotta            // Warm terracotta instead of artificial pink
-val HeroNeonPurple = Color(0xFF7C6FA0)          // Soft warm violet
+val RiskCriticalCrimson = RiskCriticalRed
+val RiskHighTerracotta = EditorialAccentOrange
+val RiskMediumOchre = Color(0xFFD97706)
+val RiskLowSage = RiskSafeGreen
 
-val RiskLowGreen = RiskLowSage
-val RiskMediumAmber = RiskMediumOchre
-val RiskHighRose = RiskHighTerracotta
-val RiskCriticalMagenta = RiskCriticalCrimson
+val FraudRed = RiskCriticalRed
+val FraudRedDark = Color(0xFFB71C1C)
+val FraudRedContainer = RiskCriticalRedBg
+val FraudRedBorder = RiskCriticalRedBorder
+
+val SafeGreen = RiskSafeGreen
+val SafeGreenDark = Color(0xFF146C34)
+val SafeGreenContainer = RiskSafeGreenBg
+val SafeGreenBorder = RiskSafeGreenBorder
+
+val GoldAccent = EditorialAccentOrange
+val GoldAccentGlow = EditorialAccentOrange
+val GoldContainer = EditorialOrangeBg
+val GoldBorder = EditorialOrangeBorder
+
+val TextHighEmphasis = EditorialTextPrimary
+val TextMediumEmphasis = EditorialTextSecondary
+val TextMuted = EditorialTextMuted
+val GridDotColor = EditorialBorder
+
+val HeroCanvasDark = EditorialBackground
+val HeroCanvasRadial = EditorialBackground
+val HeroCardGlass = EditorialSurface
+val HeroCardGlassBorder = EditorialBorder
+val HeroCardGlassHover = EditorialSurfaceMuted
+
+val HeroCyanGlow = EditorialAccentOrange
+val HeroElectricBlue = EditorialAccentOrange
+val HeroEmerald = RiskSafeGreen
+val HeroHotPink = EditorialAccentOrange
+val HeroNeonPurple = EditorialDeepBlack
+
+val RiskLowGreen = RiskSafeGreen
+val RiskMediumAmber = RiskWarningOrange
+val RiskHighRose = RiskCriticalRed
+val RiskCriticalMagenta = RiskCriticalRed

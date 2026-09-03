@@ -1,8 +1,5 @@
 package com.example.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -28,8 +24,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -42,31 +36,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ScanHistoryItem
-import com.example.ui.theme.FraudRed
-import com.example.ui.theme.FraudRedBorder
-import com.example.ui.theme.FraudRedContainer
-import com.example.ui.theme.HeroCardGlass
-import com.example.ui.theme.HeroCardGlassBorder
-import com.example.ui.theme.HeroCyanGlow
-import com.example.ui.theme.HeroElectricBlue
-import com.example.ui.theme.IndigoBorder
-import com.example.ui.theme.IndigoSurface
-import com.example.ui.theme.IndigoSurfaceHover
-import com.example.ui.theme.SafeGreen
-import com.example.ui.theme.SafeGreenBorder
-import com.example.ui.theme.SafeGreenContainer
-import com.example.ui.theme.SoftSage
-import com.example.ui.theme.TextHighEmphasis
-import com.example.ui.theme.TextMediumEmphasis
-import com.example.ui.theme.TextMuted
+import com.example.ui.theme.EditorialAccentOrange
+import com.example.ui.theme.EditorialBackground
+import com.example.ui.theme.EditorialBorder
+import com.example.ui.theme.EditorialBorderDark
+import com.example.ui.theme.EditorialDeepBlack
+import com.example.ui.theme.EditorialOrangeBg
+import com.example.ui.theme.EditorialSurface
+import com.example.ui.theme.EditorialSurfaceMuted
+import com.example.ui.theme.EditorialSurfaceWhite
+import com.example.ui.theme.EditorialTextMuted
+import com.example.ui.theme.EditorialTextPrimary
+import com.example.ui.theme.EditorialTextSecondary
+import com.example.ui.theme.RiskCriticalRed
+import com.example.ui.theme.RiskCriticalRedBg
+import com.example.ui.theme.RiskCriticalRedBorder
+import com.example.ui.theme.RiskSafeGreen
+import com.example.ui.theme.RiskSafeGreenBg
+import com.example.ui.theme.RiskSafeGreenBorder
 
 private enum class HistoryFilter {
     ALL, FRAUD_ONLY, SAFE_ONLY
@@ -93,20 +88,21 @@ fun ThreatHistorySection(
     }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
             .fillMaxWidth()
             .testTag("threat_history_section")
     ) {
-        // Section Header Card
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+        // Section Header Box (Modular 1px border)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, HeroCardGlassBorder, RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(2.dp))
+                .background(EditorialSurface)
+                .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                .padding(14.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -115,31 +111,23 @@ fun ThreatHistorySection(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(IndigoSurfaceHover)
-                                .border(1.dp, HeroCyanGlow.copy(alpha = 0.5f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.History,
-                                contentDescription = null,
-                                tint = HeroCyanGlow,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
+                                .size(7.dp)
+                                .background(EditorialAccentOrange)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Scan History",
-                                fontSize = 16.sp,
+                                text = "THREAT LOG // REPOSITORY",
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextHighEmphasis
+                                color = EditorialDeepBlack,
+                                letterSpacing = 1.sp
                             )
                             Text(
-                                text = "${historyList.size} threat analyses logged",
+                                text = "${historyList.size} logged message evaluations",
                                 fontSize = 11.sp,
-                                color = TextMuted
+                                color = EditorialTextSecondary
                             )
                         }
                     }
@@ -147,51 +135,53 @@ fun ThreatHistorySection(
                     if (historyList.isNotEmpty()) {
                         OutlinedButton(
                             onClick = onClearAll,
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMuted),
+                            shape = RoundedCornerShape(2.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EditorialBorder),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EditorialTextSecondary),
                             modifier = Modifier.testTag("clear_history_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Clear History",
-                                modifier = Modifier.size(14.dp),
-                                tint = TextMuted
+                                modifier = Modifier.size(13.dp),
+                                tint = EditorialTextMuted
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Clear All", fontSize = 11.sp, color = TextMuted)
+                            Text(
+                                text = "CLEAR LOGS",
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = EditorialTextSecondary
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Stat Summary Counters: RED vs GREEN
+                // Stat Summary Counters: Total, Fraud (Red), Safe (Green)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Total Scans Stat
-                    HistoryStatPill(
-                        label = "Total Scans",
+                    HistoryStatBlock(
+                        label = "TOTAL SCANS",
                         value = historyList.size.toString(),
-                        accentColor = HeroCyanGlow,
+                        accentColor = EditorialDeepBlack,
                         modifier = Modifier.weight(1f)
                     )
-
-                    // Fraud Detected (RED)
-                    HistoryStatPill(
-                        label = "Fraud Detected",
+                    HistoryStatBlock(
+                        label = "FRAUD FLAGGED",
                         value = fraudCount.toString(),
-                        accentColor = FraudRed,
+                        accentColor = RiskCriticalRed,
                         modifier = Modifier.weight(1f)
                     )
-
-                    // Safe Messages (GREEN)
-                    HistoryStatPill(
-                        label = "Safe / Verified",
+                    HistoryStatBlock(
+                        label = "VERIFIED SAFE",
                         value = safeCount.toString(),
-                        accentColor = SafeGreen,
+                        accentColor = RiskSafeGreen,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -201,26 +191,23 @@ fun ThreatHistorySection(
                 // Filter Chips
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    HistoryFilterChip(
-                        label = "All (${historyList.size})",
+                    EditorialFilterTab(
+                        label = "ALL (${historyList.size})",
                         isSelected = activeFilter == HistoryFilter.ALL,
-                        activeColor = HeroCyanGlow,
                         onClick = { activeFilter = HistoryFilter.ALL },
                         modifier = Modifier.weight(1f)
                     )
-                    HistoryFilterChip(
-                        label = "Fraud ($fraudCount)",
+                    EditorialFilterTab(
+                        label = "FRAUD ($fraudCount)",
                         isSelected = activeFilter == HistoryFilter.FRAUD_ONLY,
-                        activeColor = FraudRed,
                         onClick = { activeFilter = HistoryFilter.FRAUD_ONLY },
                         modifier = Modifier.weight(1f)
                     )
-                    HistoryFilterChip(
-                        label = "Safe ($safeCount)",
+                    EditorialFilterTab(
+                        label = "SAFE ($safeCount)",
                         isSelected = activeFilter == HistoryFilter.SAFE_ONLY,
-                        activeColor = SafeGreen,
                         onClick = { activeFilter = HistoryFilter.SAFE_ONLY },
                         modifier = Modifier.weight(1f)
                     )
@@ -230,52 +217,58 @@ fun ThreatHistorySection(
 
         // History List or Empty State
         if (filteredList.isEmpty()) {
-            Card(
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, IndigoBorder, RoundedCornerShape(18.dp))
-                    .padding(vertical = 12.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(EditorialSurface)
+                    .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(36.dp)
+                        tint = EditorialTextMuted,
+                        modifier = Modifier.size(30.dp)
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (historyList.isEmpty()) "No message scans yet" else "No matching items for this filter",
-                        fontSize = 14.sp,
+                        text = if (historyList.isEmpty()) "NO SCANS RECORDED" else "NO MATCHING LOGS",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextHighEmphasis
+                        color = EditorialDeepBlack,
+                        letterSpacing = 0.5.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Scanned messages, phishing detections, and safe verifications will be logged here.",
+                        text = "Scanned messages and phishing analyses are archived here.",
                         fontSize = 12.sp,
-                        color = TextMuted,
+                        color = EditorialTextSecondary,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Button(
                         onClick = onNewScan,
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = HeroElectricBlue)
+                        shape = RoundedCornerShape(2.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = EditorialAccentOrange,
+                            contentColor = Color.White
+                        )
                     ) {
-                        Text("Analyze a New Message", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "START NEW SCAN",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 }
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 filteredList.forEach { item ->
                     ScanHistoryItemCard(
                         item = item,
@@ -297,10 +290,10 @@ private fun ScanHistoryItemCard(
 ) {
     val isFraud = item.result.isFraud
     val riskScore = item.result.estimatedRiskScore
-    val riskColor = if (isFraud) FraudRed else SafeGreen
-    val riskContainer = if (isFraud) FraudRedContainer else SafeGreenContainer
-    val riskBorder = if (isFraud) FraudRedBorder else SafeGreenBorder
-    val statusLabel = if (isFraud) "FRAUD DETECTED" else "SAFE / VERIFIED"
+    val riskColor = if (isFraud) RiskCriticalRed else RiskSafeGreen
+    val riskBg = if (isFraud) RiskCriticalRedBg else RiskSafeGreenBg
+    val riskBorder = if (isFraud) RiskCriticalRedBorder else RiskSafeGreenBorder
+    val statusLabel = if (isFraud) "FRAUD DETECTED" else "VERIFIED SAFE"
 
     val relativeTime = remember(item.timestamp) {
         val diffMs = System.currentTimeMillis() - item.timestamp
@@ -314,78 +307,71 @@ private fun ScanHistoryItemCard(
         }
     }
 
-    Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = HeroCardGlass),
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.2.dp, riskBorder.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurface)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
             .clickable(onClick = onInspect)
+            .padding(12.dp)
             .testTag("history_item_${item.id}")
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            // Header: Fraud/Safe Badge (Red vs Green) + Exact Risk Percentage + Time
+        Column {
+            // Header row with status banner & time
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Fraud vs Safe Status Pill
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(riskContainer)
-                        .border(1.dp, riskBorder, RoundedCornerShape(10.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .background(riskBg)
+                        .border(1.dp, riskBorder, RoundedCornerShape(2.dp))
+                        .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     Icon(
                         imageVector = if (isFraud) Icons.Default.Warning else Icons.Default.CheckCircle,
                         contentDescription = null,
                         tint = riskColor,
-                        modifier = Modifier.size(13.dp)
+                        modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "$statusLabel • $riskScore%",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold,
                         color = riskColor
                     )
                 }
 
-                // Relative Timestamp & Delete
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = relativeTime,
-                        fontSize = 10.5.sp,
-                        color = TextMuted
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp,
+                        color = EditorialTextMuted
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     IconButton(
                         onClick = onDelete,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete item",
-                            tint = TextMuted,
+                            tint = EditorialTextMuted,
                             modifier = Modifier.size(14.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Threat Category & Risk Number
+            // Threat category & numerical score
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -393,34 +379,34 @@ private fun ScanHistoryItemCard(
             ) {
                 Text(
                     text = item.result.category,
-                    fontSize = 14.sp,
+                    fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextHighEmphasis
+                    color = EditorialDeepBlack
                 )
-
                 Text(
-                    text = "$riskScore / 100 Risk",
+                    text = "$riskScore / 100",
+                    fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = riskColor
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Message Snippet
             Text(
                 text = item.messageSnippet,
-                fontSize = 12.5.sp,
-                color = TextMediumEmphasis,
+                fontSize = 12.sp,
+                color = EditorialTextSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 17.sp
+                lineHeight = 16.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Footer: Red Flags summary & Inspect Action
+            // Footer row: flags count & inspect button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -428,34 +414,27 @@ private fun ScanHistoryItemCard(
             ) {
                 Text(
                     text = if (item.result.redFlags.isNotEmpty()) {
-                        "${item.result.redFlags.size} red flags detected"
+                        "${item.result.redFlags.size} red flags analyzed"
                     } else {
-                        "Clean message signals"
+                        "Clean signature"
                     },
-                    fontSize = 11.sp,
-                    color = if (isFraud) FraudRed.copy(alpha = 0.85f) else SafeGreen.copy(alpha = 0.85f),
-                    fontWeight = FontWeight.Medium
+                    fontSize = 10.5.sp,
+                    color = EditorialTextMuted
                 )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(IndigoSurfaceHover)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .background(EditorialSurfaceWhite)
+                        .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Visibility,
-                        contentDescription = null,
-                        tint = HeroCyanGlow,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Inspect Details",
-                        fontSize = 11.sp,
+                        text = "VIEW DIAGNOSTICS →",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = HeroCyanGlow
+                        color = EditorialAccentOrange
                     )
                 }
             }
@@ -464,7 +443,7 @@ private fun ScanHistoryItemCard(
 }
 
 @Composable
-private fun HistoryStatPill(
+private fun HistoryStatBlock(
     label: String,
     value: String,
     accentColor: Color,
@@ -472,24 +451,25 @@ private fun HistoryStatPill(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(IndigoSurface)
-            .border(1.dp, accentColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-            .padding(vertical = 8.dp, horizontal = 10.dp),
+            .clip(RoundedCornerShape(2.dp))
+            .background(EditorialSurfaceWhite)
+            .border(1.dp, EditorialBorder, RoundedCornerShape(2.dp))
+            .padding(vertical = 8.dp, horizontal = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = value,
-                fontSize = 16.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Black,
                 color = accentColor
             )
             Text(
                 text = label,
-                fontSize = 9.5.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextMuted,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = EditorialTextMuted,
                 maxLines = 1
             )
         }
@@ -497,31 +477,31 @@ private fun HistoryStatPill(
 }
 
 @Composable
-private fun HistoryFilterChip(
+private fun EditorialFilterTab(
     label: String,
     isSelected: Boolean,
-    activeColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val bg = if (isSelected) EditorialDeepBlack else EditorialSurfaceWhite
+    val textCol = if (isSelected) Color.White else EditorialTextSecondary
+    val borderCol = if (isSelected) EditorialDeepBlack else EditorialBorder
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isSelected) activeColor.copy(alpha = 0.2f) else IndigoSurface)
-            .border(
-                1.dp,
-                if (isSelected) activeColor else IndigoBorder,
-                RoundedCornerShape(10.dp)
-            )
+            .clip(RoundedCornerShape(2.dp))
+            .background(bg)
+            .border(1.dp, borderCol, RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 6.dp, horizontal = 6.dp),
+            .padding(vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
-            fontSize = 11.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) activeColor else TextMediumEmphasis,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.5.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = textCol,
             maxLines = 1
         )
     }
