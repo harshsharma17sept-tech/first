@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --editorial-bg: #E4E4E4;
+    --editorial-surface: #F6F6F6;
+    --editorial-surface-muted: #ECECEC;
+    --editorial-surface-white: #FFFFFF;
+    --editorial-border: #D7D7D7;
+    --editorial-border-dark: #BEBEBE;
+    --editorial-primary: #1B1B1B;
+    --editorial-black: #0E0E0E;
+    --editorial-secondary: #4A4A4A;
+    --editorial-muted: #767676;
+    --editorial-orange: #EC783B;
+    --editorial-orange-hover: #D9662B;
+    --editorial-orange-bg: #FDEEE6;
+    --editorial-orange-border: #F6AB83;
+    --risk-critical: #D32F2F;
+    --risk-critical-bg: #FDEAEA;
+    --risk-critical-border: #F5AAAA;
+    --risk-safe: #1B8A44;
+    --risk-safe-bg: #E9F5ED;
+    --risk-safe-border: #A5D8B4;
+  }
+
+  body {
+    background-color: var(--editorial-bg);
+    color: var(--editorial-black);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Subtle modular grid background */
+.editorial-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #E4E4E4;
+}
+::-webkit-scrollbar-thumb {
+  background: #BEBEBE;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #767676;
+}
