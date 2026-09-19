@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { ScamAnalysisResult } from '../types';
-import { ShieldAlert, ShieldCheck, AlertTriangle, CheckCircle2, Copy, Check, ExternalLink, Link2, Terminal } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, AlertTriangle, CheckCircle2, Copy, Check, Link2, FileText } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
 
 interface ResultOverviewProps {
   result: ScamAnalysisResult;
   onActionFeedback: (msg: string) => void;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 400,
+      damping: 24,
+      mass: 0.8
+    }
+  }
+};
 
 export const ResultOverview: React.FC<ResultOverviewProps> = ({
   result,
@@ -50,47 +78,58 @@ export const ResultOverview: React.FC<ResultOverviewProps> = ({
   const theme = getThemeStyles();
 
   const handleCopyReport = () => {
-    const report = `[SCAMSHIELD THREAT ASSESSMENT REPORT]
-VERDICT: ${result.verdictLabel} (${result.riskLevel} - ${result.riskPercentageString})
-CATEGORY: ${result.category}
-SUMMARY: ${result.summary}
-RECOMMENDED DEFENSE: ${result.recommendedAction}
-RED FLAGS:
-${result.redFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}
-INSPECTED URLS: ${result.detectedUrls.map(u => `${u.url} (${u.suspicious ? 'SUSPICIOUS' : 'CLEARED'})`).join(', ') || 'None'}
-DATE: ${new Date().toISOString()}
-ENGINE: HYBRID GEMINI 3.6 NEURAL + HEURISTIC CORE`;
-
-    navigator.clipboard.writeText(report);
+    triggerHaptic('light');
+    const reportText = `[ScamShield Assessment Report]
+Verdict: ${result.verdictLabel}
+Risk Level: ${result.riskLevel} (${result.estimatedRiskScore}/100)
+Category: ${result.category}
+Summary: ${result.summary}
+Action Required: ${result.recommendedAction}
+Flagged Points:
+${result.redFlags.map(f => `• ${f}`).join('\n')}
+Extracted URLs:
+${result.detectedUrls.map(u => `• ${u.url} (Suspicious: ${u.suspicious ? 'Yes' : 'No'})`).join('\n') || 'None'}
+`;
+    navigator.clipboard.writeText(reportText);
     setCopied(true);
-    onActionFeedback('Full technical report copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
+    triggerHaptic('success');
+    onActionFeedback('Security report copied to clipboard');
+    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
-    <div className="space-y-4 mb-6 animate-in fade-in duration-300">
-      {/* Primary Verdict Assessment Banner */}
-      <div className={`p-5 sm:p-6 rounded-xl border-2 ${theme.bg} ${theme.border} shadow-sm`}>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-20px' }}
+      className="space-y-4 mb-6"
+    >
+      {/* 1. Primary Verdict Assessment Card */}
+      <motion.div
+        variants={itemVariants}
+        className={`p-5 sm:p-6 rounded-2xl border-2 ${theme.bg} ${theme.border} shadow-xs`}
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md font-mono text-xs font-black tracking-wider uppercase ${theme.badgeBg} ${theme.badgeText}`}>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase ${theme.badgeBg} ${theme.badgeText} shadow-xs`}>
                 {result.isFraud ? (
-                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <ShieldAlert className="w-4 h-4" />
                 ) : (
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <ShieldCheck className="w-4 h-4" />
                 )}
                 {result.verdictLabel}
               </span>
-              <span className="font-mono text-xs px-2.5 py-1 rounded bg-white/80 border border-black/10 font-bold text-[#1B1B1B]">
-                {result.riskLevel} RISK // {result.category.toUpperCase()}
+              <span className="text-xs px-2.5 py-1 rounded-lg bg-white/90 border border-black/10 font-bold text-[#1B1B1B]">
+                {result.riskLevel} Risk • {result.category}
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black text-[#0E0E0E] tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0E0E0E] tracking-tight">
               {result.isFraud
-                ? 'High Probability Malicious Vector Detected'
-                : 'Message Cleared Standard Security Baseline'}
+                ? 'High Risk Scam / Phishing Indicator Detected'
+                : 'Message Verified as Standard Communication'}
             </h2>
             <p className="text-xs sm:text-sm text-[#4A4A4A] font-medium max-w-2xl leading-relaxed">
               {result.summary}
@@ -98,162 +137,165 @@ ENGINE: HYBRID GEMINI 3.6 NEURAL + HEURISTIC CORE`;
           </div>
 
           {/* Threat Index Gauge */}
-          <div className="bg-white/90 border border-black/10 rounded-xl p-4 min-w-[200px] shrink-0">
-            <div className="flex items-center justify-between font-mono text-xs text-[#767676] mb-1">
-              <span>THREAT INDEX</span>
-              <span className="font-extrabold text-[#0E0E0E]">{result.riskPercentageString}</span>
+          <div className="bg-white/95 border border-black/10 rounded-2xl p-4 min-w-[210px] shrink-0 shadow-xs">
+            <div className="flex items-center justify-between text-xs text-[#767676] mb-1 font-semibold">
+              <span>Risk Score</span>
+              <span className="font-extrabold text-[#0E0E0E] text-sm">{result.riskPercentageString}</span>
             </div>
             <div className="w-full bg-[#ECECEC] h-3 rounded-full overflow-hidden border border-[#D7D7D7]">
-              <div
-                className={`h-full ${theme.barColor} transition-all duration-500 rounded-full`}
-                style={{ width: `${result.estimatedRiskScore}%` }}
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${result.estimatedRiskScore}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className={`h-full ${theme.barColor} rounded-full`}
               />
             </div>
-            <div className="flex justify-between text-[10px] font-mono text-[#767676] mt-1.5">
-              <span>0% (SAFE)</span>
-              <span>100% (CRITICAL)</span>
+            <div className="flex justify-between text-[10px] font-medium text-[#767676] mt-1.5">
+              <span>Low Risk (0%)</span>
+              <span>Severe Risk (100%)</span>
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               onClick={handleCopyReport}
-              className="w-full mt-3 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-[#F6F6F6] hover:bg-[#ECECEC] border border-[#D7D7D7] font-mono text-xs font-bold text-[#1B1B1B] transition-colors"
+              className="w-full mt-3 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#F6F6F6] hover:bg-[#ECECEC] border border-[#D7D7D7] text-xs font-bold text-[#1B1B1B] transition-colors cursor-pointer"
             >
-              {copied ? <Check className="w-3 h-3 text-[#1B8A44]" /> : <Copy className="w-3 h-3 text-[#767676]" />}
-              <span>{copied ? 'REPORT COPIED' : 'COPY REPORT'}</span>
-            </button>
+              {copied ? <Check className="w-3.5 h-3.5 text-[#1B8A44]" /> : <Copy className="w-3.5 h-3.5 text-[#767676]" />}
+              <span>{copied ? 'Report Copied' : 'Copy Assessment'}</span>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* 2-Column Brief: Executive Assessment & Recommended Defense */}
+      {/* 2. 2-Column Summary Cards Grid (Staggered Children) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Executive Summary */}
-        <div className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#767676] uppercase tracking-wider mb-2">
-            <Terminal className="w-3.5 h-3.5 text-[#EC783B]" />
-            <span>EXECUTIVE TECHNICAL BRIEF</span>
+        {/* Technical Summary */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#767676] uppercase tracking-wider mb-2.5">
+              <FileText className="w-4 h-4 text-[#EC783B]" />
+              <span>Assessment Summary</span>
+            </div>
+            <p className="text-xs sm:text-sm text-[#1B1B1B] font-medium leading-relaxed">
+              {result.summary}
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-[#1B1B1B] leading-relaxed">
-            {result.summary}
-          </p>
-          <div className="mt-3 pt-3 border-t border-[#ECECEC] flex items-center justify-between text-[11px] font-mono text-[#767676]">
-            <span>CATEGORY ATTRIBUTION:</span>
+          <div className="mt-4 pt-3 border-t border-[#ECECEC] flex items-center justify-between text-xs text-[#767676]">
+            <span>Category Attribution:</span>
             <span className="font-bold text-[#0E0E0E]">{result.category}</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Recommended Defense Action */}
-        <div className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#767676] uppercase tracking-wider mb-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#EC783B]" />
-            <span>RECOMMENDED DEFENSE ACTION</span>
+        {/* Recommended Safe Action */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#767676] uppercase tracking-wider mb-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#1B8A44]" />
+              <span>Recommended Defense Action</span>
+            </div>
+            <p className="text-xs sm:text-sm font-semibold text-[#0E0E0E] leading-relaxed">
+              {result.recommendedAction}
+            </p>
           </div>
-          <p className="text-xs sm:text-sm font-semibold text-[#0E0E0E] leading-relaxed">
-            {result.recommendedAction}
-          </p>
-          <div className="mt-3 pt-3 border-t border-[#ECECEC] flex items-center gap-2">
-            <button
-              onClick={() => onActionFeedback('Security alert dispatched to device')}
-              className="flex-1 py-1.5 rounded-lg bg-[#ECECEC] hover:bg-[#E4E4E4] font-mono text-xs font-bold text-[#1B1B1B] transition-colors text-center"
-            >
-              LOG PROTOCOL
-            </button>
-            <button
-              onClick={() => onActionFeedback('Sender origin blocked')}
-              className="flex-1 py-1.5 rounded-lg bg-[#FDEEE6] hover:bg-[#FCD8C7] border border-[#F6AB83] font-mono text-xs font-bold text-[#EC783B] transition-colors text-center"
-            >
-              BLOCK SENDER
-            </button>
+          <div className="mt-4 pt-3 border-t border-[#ECECEC] flex items-center justify-between text-xs text-[#767676]">
+            <span>Security Posture:</span>
+            <span className="font-bold text-[#1B8A44]">Zero-Trust Verification</span>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Flagged Red Flags / Risk Factors Matrix */}
-      <div className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-xl p-4 sm:p-5 shadow-xs">
+      {/* 3. Detected Red Flags & Warning Indicators Card */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-2xl p-5 shadow-xs"
+      >
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#767676] uppercase tracking-wider">
-            <AlertTriangle className="w-3.5 h-3.5 text-[#EC783B]" />
-            <span>THREAT SIGNAL MATRIX & HEURISTIC RED FLAGS</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-[#767676] uppercase tracking-wider">
+            <AlertTriangle className="w-4 h-4 text-[#EC783B]" />
+            <span>Key Warning Indicators Identified ({result.redFlags.length})</span>
           </div>
-          <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#ECECEC] text-[#1B1B1B] font-bold">
-            {result.redFlags.length} SIGNALS
-          </span>
+          <span className="text-xs text-[#767676]">Behavioral & Structural Triggers</span>
         </div>
 
         <div className="space-y-2">
           {result.redFlags.map((flag, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className="flex items-start gap-3 p-3 rounded-lg bg-[#F6F6F6] border border-[#ECECEC] hover:border-[#D7D7D7] transition-colors"
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.05, duration: 0.2 }}
+              className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F6F6F6] border border-[#D7D7D7] text-xs font-medium text-[#1B1B1B]"
             >
-              <span className="font-mono text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-[#ECECEC] text-[#4A4A4A] shrink-0 mt-0.5">
-                FLAG #{String(idx + 1).padStart(2, '0')}
-              </span>
-              <p className="text-xs font-medium text-[#1B1B1B] leading-relaxed flex-1">
-                {flag}
-              </p>
-              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-[#FDEEE6] text-[#EC783B] border border-[#F6AB83] shrink-0">
-                {result.isFraud ? `+${Math.max(15, 35 - idx * 5)} PTS` : 'CLEARED'}
-              </span>
-            </div>
+              <div className="w-5 h-5 rounded-full bg-[#EC783B]/15 text-[#EC783B] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                {idx + 1}
+              </div>
+              <span className="leading-relaxed">{flag}</span>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Inspected Links & Domains Breakdown */}
+      {/* 4. Extracted Links & Domain Inspection */}
       {result.detectedUrls.length > 0 && (
-        <div className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#767676] uppercase tracking-wider mb-3">
-            <Link2 className="w-3.5 h-3.5 text-[#EC783B]" />
-            <span>INSPECTED URLS & HOST DECEPTION ANALYSIS</span>
+        <motion.div
+          variants={itemVariants}
+          className="bg-[#FFFFFF] border border-[#D7D7D7] rounded-2xl p-5 shadow-xs"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#767676] uppercase tracking-wider">
+              <Link2 className="w-4 h-4 text-[#EC783B]" />
+              <span>Extracted Web Links & Domains ({result.detectedUrls.length})</span>
+            </div>
+            <span className="text-xs text-[#D32F2F] font-semibold">Do not open unverified links</span>
           </div>
 
           <div className="space-y-2.5">
-            {result.detectedUrls.map((item, idx) => (
-              <div
+            {result.detectedUrls.map((urlItem, idx) => (
+              <motion.div
                 key={idx}
-                className="p-3 rounded-lg bg-[#F6F6F6] border border-[#D7D7D7] space-y-1.5"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.06, duration: 0.2 }}
+                className={`p-3 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs ${
+                  urlItem.suspicious
+                    ? 'bg-[#FDEAEA] border-[#F5AAAA]'
+                    : 'bg-[#F6F6F6] border-[#D7D7D7]'
+                }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-bold text-[#0E0E0E] break-all">
-                    {item.url}
-                  </span>
+                <div className="space-y-1 overflow-hidden max-w-full">
+                  <div className="font-semibold text-[#0E0E0E] break-all">
+                    {urlItem.url}
+                  </div>
+                  <div className="text-[11px] text-[#767676]">
+                    {urlItem.reason}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <span
-                    className={`inline-flex items-center gap-1 font-mono text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${
-                      item.suspicious
-                        ? 'bg-[#FDEAEA] text-[#D32F2F] border border-[#F5AAAA]'
-                        : 'bg-[#E9F5ED] text-[#1B8A44] border border-[#A5D8B4]'
+                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                      urlItem.suspicious
+                        ? 'bg-[#D32F2F] text-white'
+                        : 'bg-[#E9F5ED] text-[#1B8A44]'
                     }`}
                   >
-                    {item.suspicious ? (
-                      <>
-                        <AlertTriangle className="w-3 h-3" /> FLAGGED EVASIVE
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-3 h-3" /> VERIFIED STRUCTURE
-                      </>
-                    )}
+                    {urlItem.suspicious ? 'Flagged Malicious' : 'Standard Link'}
                   </span>
                 </div>
-                <div className="text-xs text-[#4A4A4A] font-mono bg-white p-2 rounded border border-[#ECECEC]">
-                  <span className="text-[#767676]">DIAGNOSTIC: </span>
-                  {item.reason}
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-
-      {/* Footer Engine Attribution */}
-      <div className="p-3 rounded-xl bg-[#ECECEC] border border-[#D7D7D7] flex flex-col sm:flex-row items-center justify-between gap-2 font-mono text-[11px] text-[#767676]">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#1B8A44]"></span>
-          <span>ENGINE: HYBRID GEMINI NEURAL + HEURISTIC CORE</span>
-        </div>
-        <span>ASSESSMENT COMPLETE // ZERO-TRUST ACTIVE</span>
-      </div>
-    </div>
+    </motion.div>
   );
 };

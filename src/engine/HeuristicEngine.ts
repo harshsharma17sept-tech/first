@@ -1,4 +1,4 @@
-import { RiskLevel, UrlAnalysis, HeuristicDetection, ScamAnalysisResult } from '../types';
+import { RiskLevel, UrlAnalysis, HeuristicDetection, ScamAnalysisResult, HeuristicStrictness } from '../types';
 
 export class HeuristicEngine {
   private static URL_REGEX = /(?:https?:\/\/|www\.)[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]/gi;
@@ -186,7 +186,7 @@ export class HeuristicEngine {
     return detections;
   }
 
-  public static analyzeLocally(rawInput: string): ScamAnalysisResult {
+  public static analyzeLocally(rawInput: string, strictness: HeuristicStrictness = 'MEDIUM'): ScamAnalysisResult {
     const sanitized = rawInput.trim();
     if (!sanitized) {
       throw new Error('Message cannot be empty.');
@@ -196,16 +196,27 @@ export class HeuristicEngine {
     const extractedUrls = this.extractUrls(sanitized);
     const urlAnalyses = this.analyzeUrls(extractedUrls);
 
+    // Modulate sensitivity based on strictness level
+    let multiplier = 1.0;
+    let fraudCutoff = 50;
+    if (strictness === 'LOW') {
+      multiplier = 0.8;
+      fraudCutoff = 60;
+    } else if (strictness === 'HIGH') {
+      multiplier = 1.25;
+      fraudCutoff = 40;
+    }
+
     let heuristicScore = 0;
     const heuristicSignals: string[] = [];
 
     for (const d of detections) {
-      heuristicScore += d.severityPoints;
+      heuristicScore += Math.round(d.severityPoints * multiplier);
       heuristicSignals.push(`${d.triggerName}: ${d.description}`);
     }
 
     if (urlAnalyses.some(u => u.suspicious)) {
-      heuristicScore += 25;
+      heuristicScore += Math.round(25 * multiplier);
       heuristicSignals.push('Suspicious Link: One or more URLs exhibit evasive, shortener, or spoofing traits.');
     }
 
@@ -214,17 +225,17 @@ export class HeuristicEngine {
     const hasSuspiciousUrl = urlAnalyses.some(u => u.suspicious);
 
     if (hasOtp || (hasBanking && hasSuspiciousUrl)) {
-      heuristicScore = Math.max(heuristicScore, 85);
+      heuristicScore = Math.max(heuristicScore, strictness === 'LOW' ? 75 : 85);
     } else if (detections.length === 0 && !hasSuspiciousUrl) {
-      heuristicScore = Math.min(heuristicScore, 15);
+      heuristicScore = Math.min(heuristicScore, strictness === 'HIGH' ? 20 : 12);
     }
 
     const clampedScore = Math.min(Math.max(heuristicScore, 0), 100);
 
     let riskLevel: RiskLevel;
-    if (clampedScore >= 90) riskLevel = 'CRITICAL';
-    else if (clampedScore >= 70) riskLevel = 'HIGH';
-    else if (clampedScore >= 30) riskLevel = 'MEDIUM';
+    if (clampedScore >= (strictness === 'HIGH' ? 80 : 90)) riskLevel = 'CRITICAL';
+    else if (clampedScore >= (strictness === 'HIGH' ? 60 : 70)) riskLevel = 'HIGH';
+    else if (clampedScore >= (strictness === 'HIGH' ? 25 : 30)) riskLevel = 'MEDIUM';
     else riskLevel = 'LOW';
 
     let category = 'Standard Communication';
@@ -267,7 +278,7 @@ export class HeuristicEngine {
         break;
     }
 
-    const isFraud = clampedScore >= 50 || riskLevel === 'HIGH' || riskLevel === 'CRITICAL';
+    const isFraud = clampedScore >= fraudCutoff || riskLevel === 'HIGH' || riskLevel === 'CRITICAL';
 
     return {
       riskLevel,

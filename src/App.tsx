@@ -1,21 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { AnalysisTab, AttackPreset, ScamAnalysisResult, ScanHistoryItem } from './types';
+import { AnimatePresence, motion } from 'motion/react';
+import { AnalysisTab, AttackPreset, ScamAnalysisResult, ScanHistoryItem, HeuristicStrictness } from './types';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
-import { SegmentedTabs } from './components/SegmentedTabs';
+import { DashboardNav } from './components/DashboardNav';
 import { ScannerWorkstation, PRESET_ATTACKS } from './components/ScannerWorkstation';
 import { ResultOverview } from './components/ResultOverview';
 import { AttackGraph } from './components/AttackGraph';
 import { TimelineSection } from './components/TimelineSection';
 import { ThreatHistorySection } from './components/ThreatHistorySection';
 import { MaxShieldModal } from './components/MaxShieldModal';
+import { SettingsModal, UserProfile, SecuritySettings } from './components/SettingsModal';
+import { ThreeBackground } from './components/ThreeBackground';
+import { LoadingScreen } from './components/LoadingScreen';
 import { HeuristicEngine } from './engine/HeuristicEngine';
-import { AlertCircle, Terminal, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Shield } from 'lucide-react';
 
-const STORAGE_KEY_HISTORY = 'scamshield_history_v1';
-const STORAGE_KEY_PRO = 'scamshield_pro_v1';
+const STORAGE_KEY_HISTORY = 'scamshield_history_v2';
+const STORAGE_KEY_PRO = 'scamshield_pro_v2';
+const STORAGE_KEY_PROFILE = 'scamshield_user_profile_v2';
+const STORAGE_KEY_SETTINGS = 'scamshield_user_settings_v2';
+
+const DEFAULT_PROFILE: UserProfile = {
+  name: 'Harsh Sharma',
+  email: 'harshsharma17sept@gmail.com',
+  role: 'Lead Security Analyst',
+  avatarColor: '#EC783B'
+};
+
+const DEFAULT_SETTINGS: SecuritySettings = {
+  deepAiAnalysis: true,
+  realtimeUrlCheck: true,
+  enable3dBackground: true,
+  hapticFeedback: true,
+  autoLogScans: true
+};
 
 export const App: React.FC = () => {
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [messageInput, setMessageInput] = useState<string>('');
   const [scannerMode, setScannerMode] = useState<'SMS' | 'URL' | 'EMAIL'>('SMS');
   const [activeTab, setActiveTab] = useState<AnalysisTab>('OVERVIEW');
@@ -24,8 +46,40 @@ export const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showProModal, setShowProModal] = useState<boolean>(false);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+
   const [isPro, setIsPro] = useState<boolean>(() => {
     return localStorage.getItem(STORAGE_KEY_PRO) === 'true';
+  });
+
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_PROFILE);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_PROFILE;
+  });
+
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_SETTINGS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_SETTINGS;
+  });
+
+  const [heuristicStrictness, setHeuristicStrictness] = useState<HeuristicStrictness>(() => {
+    try {
+      const saved = localStorage.getItem('scamshield_heuristic_strictness');
+      if (saved === 'LOW' || saved === 'MEDIUM' || saved === 'HIGH') {
+        return saved;
+      }
+    } catch {}
+    return 'MEDIUM';
   });
 
   const [history, setHistory] = useState<ScanHistoryItem[]>(() => {
@@ -38,7 +92,7 @@ export const App: React.FC = () => {
       // Fallback
     }
 
-    // Default sample fixtures for immediate cybersecurity lab experience
+    // Default realistic sample threat for immediate demonstration
     const initialPreset = PRESET_ATTACKS[0];
     const initialResult = HeuristicEngine.analyzeLocally(initialPreset.content);
     return [
@@ -53,16 +107,32 @@ export const App: React.FC = () => {
     ];
   });
 
-  // Persist history to localStorage
+  // Persist storage
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
-    } catch {
-      // Ignore
-    }
+    } catch {}
   }, [history]);
 
-  // Initial load of first preset to showcase workstation immediately
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(userProfile));
+    } catch {}
+  }, [userProfile]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(securitySettings));
+    } catch {}
+  }, [securitySettings]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scamshield_heuristic_strictness', heuristicStrictness);
+    } catch {}
+  }, [heuristicStrictness]);
+
+  // Initial populate with default sample
   useEffect(() => {
     if (!analysisResult && history.length > 0) {
       setAnalysisResult(history[0].result);
@@ -89,7 +159,8 @@ export const App: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: messageInput.trim(),
-          scannerMode
+          scannerMode,
+          strictness: heuristicStrictness
         })
       });
 
@@ -98,44 +169,46 @@ export const App: React.FC = () => {
       if (response.ok) {
         result = await response.json();
       } else {
-        // Fallback to local heuristic engine
-        console.warn('Backend API error, running local heuristic engine fallback');
-        result = HeuristicEngine.analyzeLocally(messageInput.trim());
+        // Fallback to local heuristic engine with calibrated strictness
+        result = HeuristicEngine.analyzeLocally(messageInput.trim(), heuristicStrictness);
       }
 
       setAnalysisResult(result);
 
-      // Add to history
-      const newHistoryItem: ScanHistoryItem = {
-        id: `scan-${Date.now()}`,
-        timestamp: Date.now(),
-        messageSnippet: messageInput.trim().substring(0, 95) + (messageInput.length > 95 ? '...' : ''),
-        fullMessage: messageInput.trim(),
-        scannerMode,
-        result
-      };
-
-      setHistory(prev => [newHistoryItem, ...prev]);
-      setActiveTab('OVERVIEW');
-      showToast('Threat assessment completed.');
-    } catch (err: any) {
-      console.warn('Network error, executing offline heuristic analysis:', err);
-      try {
-        const fallbackResult = HeuristicEngine.analyzeLocally(messageInput.trim());
-        setAnalysisResult(fallbackResult);
+      // Add to history if enabled
+      if (securitySettings.autoLogScans) {
         const newHistoryItem: ScanHistoryItem = {
           id: `scan-${Date.now()}`,
           timestamp: Date.now(),
           messageSnippet: messageInput.trim().substring(0, 95) + (messageInput.length > 95 ? '...' : ''),
           fullMessage: messageInput.trim(),
           scannerMode,
-          result: fallbackResult
+          result
         };
         setHistory(prev => [newHistoryItem, ...prev]);
+      }
+
+      setActiveTab('OVERVIEW');
+      showToast('Threat assessment completed.');
+    } catch (err: any) {
+      try {
+        const fallbackResult = HeuristicEngine.analyzeLocally(messageInput.trim(), heuristicStrictness);
+        setAnalysisResult(fallbackResult);
+        if (securitySettings.autoLogScans) {
+          const newHistoryItem: ScanHistoryItem = {
+            id: `scan-${Date.now()}`,
+            timestamp: Date.now(),
+            messageSnippet: messageInput.trim().substring(0, 95) + (messageInput.length > 95 ? '...' : ''),
+            fullMessage: messageInput.trim(),
+            scannerMode,
+            result: fallbackResult
+          };
+          setHistory(prev => [newHistoryItem, ...prev]);
+        }
         setActiveTab('OVERVIEW');
-        showToast('Assessment completed via local heuristic core.');
+        showToast('Assessment completed via heuristic analysis.');
       } catch (localErr: any) {
-        setErrorMessage(localErr?.message || 'Failed to analyze threat vector');
+        setErrorMessage(localErr?.message || 'Failed to evaluate threat message');
       }
     } finally {
       setIsLoading(false);
@@ -163,32 +236,52 @@ export const App: React.FC = () => {
 
   const handleDeleteHistoryItem = (id: string) => {
     setHistory(prev => prev.filter(h => h.id !== id));
-    showToast('Threat log deleted.');
+    showToast('Scan log removed.');
   };
 
   const handleClearAllHistory = () => {
     setHistory([]);
-    showToast('Threat log archive cleared.');
+    showToast('Threat history cleared.');
   };
 
   const handleActivatePro = (plan: string) => {
     setIsPro(true);
     localStorage.setItem(STORAGE_KEY_PRO, 'true');
     setShowProModal(false);
-    showToast(`MaxShield Pro (${plan.toUpperCase()}) Activated! Continuous Zero-Day Surveillance Armed.`);
+    showToast(`MaxShield Pro (${plan}) activated. Active surveillance enabled.`);
   };
 
   return (
-    <div className="min-h-screen bg-[#E4E4E4] text-[#0E0E0E] editorial-grid selection:bg-[#EC783B] selection:text-black">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0E0E0E] text-white font-mono text-xs shadow-xl animate-in slide-in-from-bottom-3 duration-200 border border-[#BEBEBE]">
-          <CheckCircle2 className="w-4 h-4 text-[#EC783B]" />
-          <span>{toastMessage}</span>
-        </div>
+    <div className="min-h-screen bg-[#E8E8E8] text-[#0E0E0E] relative selection:bg-[#EC783B] selection:text-black">
+      {/* 3D Background Theme (Interactive WebGL Canvas) */}
+      {securitySettings.enable3dBackground && (
+        <ThreeBackground interactive={true} />
       )}
 
-      {/* MaxShield Pro Modal */}
+      {/* Loading Screen Animation */}
+      <AnimatePresence>
+        {initialLoading && (
+          <LoadingScreen onComplete={() => setInitialLoading(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Floating Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+            className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0E0E0E] text-white text-xs font-semibold shadow-2xl border border-white/10 backdrop-blur-md"
+          >
+            <CheckCircle2 className="w-4 h-4 text-[#1B8A44]" />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MaxShield Pro Membership Modal */}
       {showProModal && (
         <MaxShieldModal
           isCurrentPro={isPro}
@@ -197,27 +290,36 @@ export const App: React.FC = () => {
         />
       )}
 
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-        {/* Header Bar */}
+      {/* User Settings & Profile Modal */}
+      {showSettingsModal && (
+        <SettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          userProfile={userProfile}
+          onSaveProfile={setUserProfile}
+          settings={securitySettings}
+          onSaveSettings={setSecuritySettings}
+          onClearHistory={handleClearAllHistory}
+        />
+      )}
+
+      {/* Main Content Container with Subtle Glass Transparency */}
+      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-7">
+        {/* Navigation & Status Header */}
         <Header
           isPro={isPro}
-          onScanNow={() => {
-            setActiveTab('OVERVIEW');
-            handleAnalyze();
-          }}
+          userProfile={userProfile}
+          onOpenSettings={() => setShowSettingsModal(true)}
           onOpenPro={() => setShowProModal(true)}
-          onShowInfo={() => showToast('ScamShield Cybersecurity Lab v2.6.4 // Zero-Trust Engine')}
         />
 
-        {/* Hero Section & Stats */}
+        {/* Hero Section & Headline */}
         <Hero
           threatScannedCount={184 + history.length}
-          isPro={isPro}
-          onUpgradeClick={() => setShowProModal(true)}
         />
 
-        {/* 4-Segmented Tabs */}
-        <SegmentedTabs
+        {/* 4 Clickable Smooth Animated Dashboard Buttons */}
+        <DashboardNav
           activeTab={activeTab}
           historyCount={history.length}
           onTabChange={tab => setActiveTab(tab)}
@@ -225,66 +327,137 @@ export const App: React.FC = () => {
 
         {/* Error Alert Card */}
         {errorMessage && (
-          <div className="mb-4 p-4 rounded-xl bg-[#FDEAEA] border border-[#F5AAAA] flex items-center gap-3 text-xs font-mono text-[#D32F2F]">
+          <div className="mb-4 p-4 rounded-xl bg-[#FDEAEA] border border-[#F5AAAA] flex items-center gap-3 text-xs font-medium text-[#D32F2F]">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Main Workstation or History View */}
-        {activeTab === 'HISTORY' ? (
-          <ThreatHistorySection
-            history={history}
-            onSelect={handleSelectHistoryItem}
-            onDelete={handleDeleteHistoryItem}
-            onClearAll={handleClearAllHistory}
-            onNewScan={() => {
-              handleClear();
-              setActiveTab('OVERVIEW');
-            }}
-          />
-        ) : (
-          <>
-            {/* Input Workstation */}
-            <ScannerWorkstation
-              input={messageInput}
-              scannerMode={scannerMode}
-              isLoading={isLoading}
-              onInputChange={setMessageInput}
-              onModeChange={setScannerMode}
-              onAnalyze={handleAnalyze}
-              onClear={handleClear}
-              onSelectPreset={handleSelectPreset}
-            />
+        {/* Dashboard View Routing with Silky Smooth Transitions */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'OVERVIEW' && (
+            <motion.div
+              key="overview-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Input Workstation */}
+              <ScannerWorkstation
+                input={messageInput}
+                scannerMode={scannerMode}
+                isLoading={isLoading}
+                strictness={heuristicStrictness}
+                onInputChange={setMessageInput}
+                onModeChange={setScannerMode}
+                onStrictnessChange={setHeuristicStrictness}
+                onAnalyze={handleAnalyze}
+                onClear={handleClear}
+                onSelectPreset={handleSelectPreset}
+              />
 
-            {/* Active Analysis Results based on Tab */}
-            {analysisResult && (
-              <>
-                {activeTab === 'OVERVIEW' && (
+              {/* Active Overview Analysis View */}
+              {analysisResult && (
+                <div className="mt-4">
                   <ResultOverview
                     result={analysisResult}
                     onActionFeedback={showToast}
                   />
-                )}
-                {activeTab === 'GRAPH' && (
-                  <AttackGraph result={analysisResult} />
-                )}
-                {activeTab === 'TIMELINE' && (
-                  <TimelineSection result={analysisResult} />
-                )}
-              </>
-            )}
-          </>
-        )}
+                </div>
+              )}
+            </motion.div>
+          )}
 
-        {/* Editorial Footer */}
-        <footer className="mt-8 pt-6 pb-4 border-t border-[#D7D7D7] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-[#767676]">
+          {activeTab === 'GRAPH' && (
+            <motion.div
+              key="graph-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {analysisResult ? (
+                <AttackGraph result={analysisResult} />
+              ) : (
+                <div className="p-8 rounded-2xl bg-[#FFFFFF] border border-[#D7D7D7] text-center">
+                  <p className="text-sm font-semibold text-[#0E0E0E]">No active threat analyzed yet</p>
+                  <p className="text-xs text-[#767676] mt-1 mb-4">Run a scan to visualize the threat vector topology</p>
+                  <button
+                    onClick={() => setActiveTab('OVERVIEW')}
+                    className="px-4 py-2 rounded-xl bg-[#EC783B] text-black font-bold text-xs hover:bg-[#D9662B] transition-colors cursor-pointer"
+                  >
+                    Open Threat Scanner
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'TIMELINE' && (
+            <motion.div
+              key="timeline-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {analysisResult ? (
+                <TimelineSection result={analysisResult} />
+              ) : (
+                <div className="p-8 rounded-2xl bg-[#FFFFFF] border border-[#D7D7D7] text-center">
+                  <p className="text-sm font-semibold text-[#0E0E0E]">No active threat analyzed yet</p>
+                  <p className="text-xs text-[#767676] mt-1 mb-4">Run a scan to map the 5-stage attack kill chain</p>
+                  <button
+                    onClick={() => setActiveTab('OVERVIEW')}
+                    className="px-4 py-2 rounded-xl bg-[#EC783B] text-black font-bold text-xs hover:bg-[#D9662B] transition-colors cursor-pointer"
+                  >
+                    Open Threat Scanner
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'HISTORY' && (
+            <motion.div
+              key="history-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ThreatHistorySection
+                history={history}
+                onSelect={handleSelectHistoryItem}
+                onDelete={handleDeleteHistoryItem}
+                onClearAll={handleClearAllHistory}
+                onNewScan={() => {
+                  handleClear();
+                  setActiveTab('OVERVIEW');
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Professional Humanized Footer */}
+        <footer className="mt-10 pt-6 pb-6 border-t border-[#D7D7D7] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#767676]">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#EC783B]"></span>
-            <span className="font-bold text-[#0E0E0E]">SCAMSHIELD CYBERLAB</span>
-            <span>// DEPLOYED ON CLOUD RUN</span>
+            <span className="w-2 h-2 rounded-full bg-[#1B8A44]"></span>
+            <span className="font-bold text-[#0E0E0E]">ScamShield Security Studio</span>
+            <span>• Verified Threat Detection</span>
           </div>
-          <div>CONFIDENTIAL ZERO-TRUST SIMULATION SANDBOX</div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="hover:text-[#0E0E0E] transition-colors underline-offset-2 hover:underline"
+            >
+              Settings & Profile
+            </button>
+            <span>•</span>
+            <span>Private Local Processing</span>
+          </div>
         </footer>
       </main>
     </div>

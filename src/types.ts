@@ -37,6 +37,8 @@ export interface ScanHistoryItem {
 
 export type AnalysisTab = 'OVERVIEW' | 'GRAPH' | 'TIMELINE' | 'HISTORY';
 
+export type HeuristicStrictness = 'LOW' | 'MEDIUM' | 'HIGH';
+
 export interface AttackPreset {
   title: string;
   tag: string;

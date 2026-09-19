@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenAI } from '@google/genai';
 import { HeuristicEngine } from './src/engine/HeuristicEngine';
 import { RiskLevel, ScamAnalysisResult } from './src/types';
 
@@ -13,6 +14,19 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Lazy initialization for Gemini client
+let geminiClient: GoogleGenAI | null = null;
+function getGemini(): GoogleGenAI | null {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+    return null;
+  }
+  if (!geminiClient) {
+    geminiClient = new GoogleGenAI({ apiKey });
+  }
+  return geminiClient;
+}
 
 app.use(cors());
 app.use(express.json());
@@ -40,7 +54,7 @@ interface GeminiApiResponse {
 // Threat Analysis Endpoint
 app.post('/api/analyze', async (req: Request, res: Response) => {
   try {
-    const { message, scannerMode = 'SMS' } = req.body;
+    const { message, scannerMode = 'SMS', strictness = 'MEDIUM' } = req.body;
     if (!message || typeof message !== 'string' || !message.trim()) {
       res.status(400).json({ error: 'Message content cannot be empty.' });
       return;
@@ -53,24 +67,26 @@ app.post('/api/analyze', async (req: Request, res: Response) => {
     const extractedUrls = HeuristicEngine.extractUrls(sanitized);
     const urlAnalyses = HeuristicEngine.analyzeUrls(extractedUrls);
 
-    let heuristicScore = 0;
+    let rawScore = 0;
     const heuristicSignals: string[] = [];
     for (const d of detections) {
-      heuristicScore += d.severityPoints;
+      rawScore += d.severityPoints;
       heuristicSignals.push(`${d.triggerName}: ${d.description}`);
     }
 
     if (urlAnalyses.some(u => u.suspicious)) {
-      heuristicScore += 25;
+      rawScore += 25;
       heuristicSignals.push('Suspicious Link: One or more URLs exhibit evasive, shortener, or spoofing traits.');
     }
-    heuristicScore = Math.min(Math.max(heuristicScore, 0), 100);
+
+    const multiplier = strictness === 'LOW' ? 0.8 : strictness === 'HIGH' ? 1.25 : 1.0;
+    const heuristicScore = Math.min(Math.max(Math.round(rawScore * multiplier), 0), 100);
 
     // 2. Query Gemini API if configured
     let aiResult: GeminiApiResponse | null = null;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const ai = getGemini();
 
-    if (apiKey && apiKey !== 'MY_GEMINI_API_KEY') {
+    if (ai) {
       try {
         const systemInstruction = `You are ScamShield AI, an expert cybersecurity fraud detection analyst.
 Analyze the following message for scam risk, social engineering, impersonation, phishing, and credential harvesting.
@@ -87,28 +103,20 @@ Do not include markdown codeblocks or explanation outside JSON.`;
 
         const userPrompt = `Vector: ${scannerMode}\nMessage Content:\n"""\n${sanitized}\n"""\nExtracted URLs: ${extractedUrls.join(', ') || 'None'}`;
 
-        const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-        const response = await fetch(geminiEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: userPrompt }] }],
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: 'application/json'
-            }
-          })
+        const aiResponse = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: userPrompt,
+          config: {
+            systemInstruction,
+            temperature: 0.1,
+            responseMimeType: 'application/json'
+          }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            aiResult = JSON.parse(clean);
-          }
+        const rawText = aiResponse.text;
+        if (rawText) {
+          const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          aiResult = JSON.parse(clean);
         }
       } catch (err) {
         console.warn('Gemini API call failed, falling back to heuristic engine:', err);
@@ -236,10 +244,10 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     // Serve production static build
-    const distPath = path.resolve(__dirname, 'dist');
+    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(distPath, 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
