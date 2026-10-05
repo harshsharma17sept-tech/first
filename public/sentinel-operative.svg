@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#0a1f13" stop-opacity="0.8"/>
+      <stop offset="45%" stop-color="#05100a" stop-opacity="0.95"/>
+      <stop offset="85%" stop-color="#040608" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Emerald Rim Light Gradient -->
+    <linearGradient id="greenRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#22c55e" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#15803d" stop-opacity="0.1"/>
+    </linearGradient>
+
+    <!-- Hat Material Gradient -->
+    <linearGradient id="hatDark" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#1c2128"/>
+      <stop offset="40%" stop-color="#12161b"/>
+      <stop offset="85%" stop-color="#0b0e12"/>
+      <stop offset="100%" stop-color="#05070a"/>
+    </linearGradient>
+
+    <!-- Hat Brim Underside Shadow -->
+    <linearGradient id="brimShadow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#030406" stop-opacity="0.98"/>
+      <stop offset="60%" stop-color="#07090d" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0b0e13" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Face Metallic Charcoal Shader -->
+    <linearGradient id="faceShade" x1="40%" y1="10%" x2="65%" y2="90%">
+      <stop offset="0%" stop-color="#1e2329"/>
+      <stop offset="35%" stop-color="#14181d"/>
+      <stop offset="70%" stop-color="#0a0d11"/>
+      <stop offset="100%" stop-color="#050709"/>
+    </linearGradient>
+
+    <!-- Hoodie Gradient -->
+    <linearGradient id="hoodieShade" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#161a20"/>
+      <stop offset="50%" stop-color="#0d1014"/>
+      <stop offset="100%" stop-color="#06080a"/>
+    </linearGradient>
+
+    <!-- Glowing Eye Filter -->
+    <filter id="eyeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="40" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle Ambient Bloom Filter -->
+    <filter id="ambientBloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Green Lens Flare Radial -->
+    <radialGradient id="lensHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#86efac" stop-opacity="1"/>
+      <stop offset="18%" stop-color="#4ade80" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#22c55e" stop-opacity="0.8"/>
+      <stop offset="65%" stop-color="#16a34a" stop-opacity="0.45"/>
+      <stop offset="85%" stop-color="#15803d" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Specular Highlight for Face -->
+    <linearGradient id="noseHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#374151" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#1f2937" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#111827" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Rain streak pattern -->
+    <linearGradient id="rainFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#22c55e" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Dark Background Plate -->
+  <rect width="1000" height="850" fill="url(#bgGlow)"/>
+
+  <!-- Vertical Rain & Cyber Bokeh Lines in Background -->
+  <g opacity="0.45">
+    <line x1="80" y1="40" x2="80" y2="280" stroke="url(#rainFade)" stroke-width="1.5"/>
+    <line x1="140" y1="180" x2="140" y2="480" stroke="url(#rainFade)" stroke-width="1.2"/>
+    <line x1="210" y1="60" x2="210" y2="340" stroke="url(#rainFade)" stroke-width="2"/>
+    <line x1="310" y1="20" x2="310" y2="220" stroke="url(#rainFade)" stroke-width="1.2"/>
+    <line x1="680" y1="50" x2="680" y2="320" stroke="url(#rainFade)" stroke-width="1.8"/>
+    <line x1="780" y1="120" x2="780" y2="440" stroke="url(#rainFade)" stroke-width="1.2"/>
+    <line x1="860" y1="30" x2="860" y2="360" stroke="url(#rainFade)" stroke-width="2.2"/>
+    <line x1="920" y1="160" x2="920" y2="520" stroke="url(#rainFade)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Volumetric Green Glow Behind Head -->
+  <ellipse cx="500" cy="380" rx="360" ry="320" fill="#22c55e" opacity="0.08" filter="blur(60px)"/>
+  <ellipse cx="610" cy="390" rx="160" ry="160" fill="#22c55e" opacity="0.14" filter="blur(40px)"/>
+
+  <!-- ================= OPERATIVE CHARACTER ================= -->
+  <g id="operativeCharacter">
+    <!-- SHOULDERS / HOODIE BASE -->
+    <path d="M120 850 C130 720, 220 640, 360 620 L640 620 C780 640, 870 720, 880 850 Z"
+          fill="url(#hoodieShade)"/>
+
+    <!-- Left Shoulder Rim Light (Subtle) -->
+    <path d="M140 850 C148 735, 230 655, 360 630"
+          stroke="#22c55e" stroke-width="2.5" stroke-opacity="0.3" fill="none" filter="blur(2px)"/>
+
+    <!-- Right Shoulder Rim Light (Strong Emerald Highlight from Reference) -->
+    <path d="M860 850 C852 730, 770 650, 640 625"
+          stroke="#4ade80" stroke-width="4.5" stroke-opacity="0.75" fill="none" filter="blur(2px)"/>
+    <path d="M860 850 C852 730, 770 650, 640 625"
+          stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.5" fill="none"/>
+
+    <!-- HOODIE COLLAR & ZIPPER / NECK AREA -->
+    <path d="M370 620 Q500 700 630 620 L650 670 Q500 750 350 670 Z"
+          fill="#0c0f13" stroke="#1f2937" stroke-width="1.5"/>
+    <path d="M497 680 L497 850" stroke="#1f2937" stroke-width="3" stroke-dasharray="4,3"/>
+
+    <!-- NECK & CHIN BASE -->
+    <path d="M430 520 L430 640 Q500 660 570 640 L570 520 Z"
+          fill="#0e1216"/>
+
+    <!-- LOWER JAW & FACE CONTOURS (Matte Charcoal 3D Render) -->
+    <path d="M370 410 C370 550, 430 630, 500 630 C570 630, 630 550, 630 410 C630 360, 370 360, 370 410 Z"
+          fill="url(#faceShade)"/>
+
+    <!-- Cheek & Jaw Specular Highlights -->
+    <path d="M400 480 Q440 580 500 600"
+          stroke="#2d3748" stroke-width="2" stroke-opacity="0.4" fill="none"/>
+    <path d="M600 480 Q560 580 500 600"
+          stroke="#4ade80" stroke-width="3" stroke-opacity="0.5" fill="none" filter="blur(1.5px)"/>
+
+    <!-- MOUTH / LIPS (Subtle, serious expression) -->
+    <path d="M465 555 Q500 550 535 555 Q500 568 465 555 Z"
+          fill="#090c0f" stroke="#1a202c" stroke-width="1"/>
+    <path d="M472 555 Q500 558 528 555"
+          stroke="#2d3748" stroke-width="1.2" fill="none"/>
+    <path d="M485 572 Q500 575 515 572"
+          stroke="#171e28" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+    <!-- NOSE (Subtle 3D bridge & soft shadow) -->
+    <path d="M495 440 L490 515 Q500 525 510 515 L505 440 Z"
+          fill="#11161c"/>
+    <path d="M498 445 L494 510 Q500 518 506 510 L502 445 Z"
+          fill="url(#noseHighlight)"/>
+    <ellipse cx="490" cy="514" rx="4" ry="2.5" fill="#07090c"/>
+    <ellipse cx="510" cy="514" rx="4" ry="2.5" fill="#07090c"/>
+
+    <!-- LEFT EYE (Viewer's Left) - Concealed in Deep Shadow -->
+    <ellipse cx="435" cy="435" rx="24" ry="12" fill="#06080a"/>
+    <path d="M415 432 Q435 425 455 432" stroke="#12161c" stroke-width="2" fill="none"/>
+
+    <!-- ================= RIGHT EYE (Viewer's Right) - THE GLOWING CYBER EYE ================= -->
+    <!-- Ambient Green Eye Reflection on Cheek & Eye Socket -->
+    <ellipse cx="585" cy="435" rx="70" ry="50" fill="#22c55e" opacity="0.22" filter="blur(24px)"/>
+    <ellipse cx="585" cy="435" rx="40" ry="30" fill="#4ade80" opacity="0.35" filter="blur(14px)"/>
+
+    <!-- Cyber Eye Socket Silhouette -->
+    <ellipse cx="585" cy="435" rx="28" ry="15" fill="#05070a" stroke="#16a34a" stroke-width="1" stroke-opacity="0.4"/>
+
+    <!-- Glowing Iris / Lens Housing -->
+    <g filter="url(#eyeGlow)">
+      <!-- Outer emerald bloom circle -->
+      <circle cx="585" cy="435" r="18" fill="url(#lensHalo)"/>
+      <!-- Inner high-intensity ring -->
+      <circle cx="585" cy="435" r="10" fill="#22c55e" stroke="#86efac" stroke-width="1.8"/>
+      <!-- Brilliant white-hot pupil center -->
+      <circle cx="585" cy="435" r="4.5" fill="#ffffff"/>
+      <!-- Micro HUD reticle dots -->
+      <circle cx="585" cy="423" r="1" fill="#bbf7d0"/>
+      <circle cx="585" cy="447" r="1" fill="#bbf7d0"/>
+      <circle cx="573" cy="435" r="1" fill="#bbf7d0"/>
+      <circle cx="597" cy="435" r="1" fill="#bbf7d0"/>
+    </g>
+
+    <!-- Transverse Lens Flare Rays -->
+    <line x1="535" y1="435" x2="635" y2="435" stroke="#86efac" stroke-width="1.5" stroke-opacity="0.75" filter="url(#eyeGlow)"/>
+    <line x1="510" y1="435" x2="660" y2="435" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.4"/>
+
+    <!-- Light reflection on the right cheekbone from the eye -->
+    <path d="M570 470 Q610 475 625 450" stroke="#4ade80" stroke-width="2.5" stroke-opacity="0.4" fill="none" filter="blur(3px)"/>
+
+    <!-- ================= THE ICONIC BUCKET HAT ================= -->
+    <!-- Brim Underside Deep Cast Shadow over face -->
+    <path d="M220 370 C280 430, 720 430, 780 370 C720 405, 280 405, 220 370 Z"
+          fill="url(#brimShadow)"/>
+
+    <!-- Hat Crown (Top portion of the bucket hat) -->
+    <path d="M315 220 C325 125, 410 95, 500 95 C590 95, 675 125, 685 220 L730 350 C580 365, 420 365, 270 350 Z"
+          fill="url(#hatDark)"/>
+
+    <!-- Hat Crown Highlights & Fabric Seams -->
+    <path d="M320 220 C420 235, 580 235, 680 220"
+          stroke="#2d3748" stroke-width="2" stroke-opacity="0.5" fill="none"/>
+    <path d="M360 135 C440 145, 560 145, 640 135"
+          stroke="#2d3748" stroke-width="1.5" stroke-opacity="0.4" fill="none"/>
+    <path d="M500 95 L500 230"
+          stroke="#1f2937" stroke-width="1" stroke-opacity="0.4" stroke-dasharray="3,3"/>
+
+    <!-- Hat Wide Brim (Flaring downwards and outwards) -->
+    <path d="M240 340 C340 375, 660 375, 760 340 C815 440, 720 480, 500 480 C280 480, 185 440, 240 340 Z"
+          fill="url(#hatDark)" stroke="#1a202c" stroke-width="2"/>
+
+    <!-- Subtle Stitching Lines on the Brim -->
+    <path d="M245 365 C345 400, 655 400, 755 365"
+          stroke="#263140" stroke-width="1.5" stroke-dasharray="5,3" fill="none"/>
+    <path d="M235 390 C345 425, 655 425, 765 390"
+          stroke="#1f2733" stroke-width="1.5" stroke-dasharray="5,3" fill="none"/>
+    <path d="M225 415 C345 450, 655 450, 775 415"
+          stroke="#171d26" stroke-width="1.5" stroke-dasharray="5,3" fill="none"/>
+
+    <!-- Hat Rim Edge Neon Green Lighting (The signature edge rim light) -->
+    <!-- Left Hat Brim Rim (Subtle) -->
+    <path d="M210 435 C235 375, 275 340, 315 320"
+          stroke="#22c55e" stroke-width="3" stroke-opacity="0.45" fill="none" filter="blur(2px)"/>
+    <!-- Right Hat Brim Rim (Brilliant Emerald Rim from Reference) -->
+    <path d="M790 435 C765 375, 725 340, 685 320"
+          stroke="#4ade80" stroke-width="5" stroke-opacity="0.85" fill="none" filter="blur(2px)"/>
+    <path d="M790 435 C765 375, 725 340, 685 320"
+          stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none"/>
+
+    <!-- Bottom edge rim reflection -->
+    <path d="M620 475 C680 470, 740 455, 785 430"
+          stroke="#22c55e" stroke-width="3.5" stroke-opacity="0.6" fill="none" filter="blur(2px)"/>
+  </g>
+
+  <!-- Foreground Atmospheric Vignette and Cyber Grid Particles -->
+  <g opacity="0.3">
+    <circle cx="280" cy="520" r="1.5" fill="#4ade80"/>
+    <circle cx="340" cy="620" r="2" fill="#22c55e"/>
+    <circle cx="680" cy="540" r="2.5" fill="#86efac"/>
+    <circle cx="740" cy="640" r="1.5" fill="#4ade80"/>
+    <circle cx="620" cy="380" r="1.8" fill="#86efac"/>
+  </g>
+</svg>
